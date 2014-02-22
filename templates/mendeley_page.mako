@@ -23,6 +23,59 @@
 
 % endif
 
+<div class="row mendeley-options-top">
+    
+                <a href="${api_url}" type="button" class="btn btn-default"><span class="glyphicon glyphicon-home"></span>&nbsp; All Items</a>
+
+                <form role="form" id="mendeleyCollectionForm" style="display: inline;">
+                    <input type="hidden" id="mendeleyCollectionName" name="collection" value="">
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                          <span class="glyphicon glyphicon-list"></span>&nbsp; Collections
+                          <span class="caret"></span>
+                        </button>
+                        <ul class="dropdown-menu" role="menu">
+                        % if len(collection_names) > 0:
+                            % for name in collection_names:
+                                <li onclick="$('#mendeleyCollectionName').val('${name}');$('#mendeleyCollectionForm').submit()">
+                                    <a href="#">${name}</a>
+                                </li>
+                            % endfor
+                        % else:
+                            <li>
+                                    <a href="#"><em>No Collections Found</em></a>
+                                </li>
+
+                        % endif
+                        </ul>
+                    </div>
+                </form>
+
+                <div class="btn-group">
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                      <span class="glyphicon glyphicon-pencil"></span>&nbsp; Cite
+                      <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" role="menu">
+                        % for style in citation_styles:
+                            <li><a href="#" onclick="createCitation('${style}')">${style}</a></li>
+                        % endfor
+                    </ul>
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                      <span class="glyphicon glyphicon-export"></span>&nbsp; Export
+                      <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" role="menu">
+                        % for format in export_formats:
+                            <li><a href="#" onclick="window.open(getExportURL('${format}'), '_blank')">${format}</a></li>
+                        % endfor
+                    </ul>
+                </div>
+
+             </div>
 
 <div class="row">
 
@@ -30,18 +83,23 @@
 
     <table class="table table-bordered table-striped" id="all-items-table">
         <tr>
-            <td class="mendeley-item-table-view-row" colspan="3"></td>
+            <td class="mendeley-item-table-view-row" colspan="2"></td>
         </tr>
         <tr>
-            <td><input type="checkbox" name="select-all" id="select-all-checkbox">&nbsp;&nbsp;<strong>Title</strong></td>
-             <td><strong>Publisher</strong></td>
-             <td><strong>Type</strong></td>
+            <td><input type="checkbox" name="select-all" id="select-all-checkbox"></td>
+             <td><strong>All Documents</strong></td>
+
         </tr>
        % for item in items:
          <tr>
-            <td><input type="checkbox" name="select-all" id="select-all-checkbox">&nbsp;&nbsp;${item['title']}</td>
-             <td>${item['publisher']}</td>
-             <td>${item['type']}</td>
+            <td><input type="checkbox" name="select-all" id="select-all-checkbox"></td>
+             <td>
+                 <ul style="list-style: none;">
+                    <li>${item['title']}</li>
+                    <li>${item['publisher']}</li>
+                    <li>${item['type']}</li>
+                 </ul>
+             </td>
         </tr>
        % endfor
 
