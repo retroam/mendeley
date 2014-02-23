@@ -24,14 +24,14 @@
 % endif
 
 <div class="row mendeley-options-top">
-    
+
                 <a href="${api_url}" type="button" class="btn btn-default"><span class="glyphicon glyphicon-home"></span>&nbsp; All Items</a>
 
                 <form role="form" id="mendeleyCollectionForm" style="display: inline;">
                     <input type="hidden" id="mendeleyCollectionName" name="collection" value="">
                     <div class="btn-group">
                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                          <span class="glyphicon glyphicon-list"></span>&nbsp; Collections
+                          <span class="glyphicon glyphicon-list"></span>&nbsp; Folders
                           <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu" role="menu">
@@ -43,7 +43,7 @@
                             % endfor
                         % else:
                             <li>
-                                    <a href="#"><em>No Collections Found</em></a>
+                                    <a href="#"><em>No Folders Found</em></a>
                                 </li>
 
                         % endif
@@ -51,18 +51,22 @@
                     </div>
                 </form>
 
-                <div class="btn-group">
-                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-                      <span class="glyphicon glyphicon-pencil"></span>&nbsp; Cite
-                      <span class="caret"></span>
-                    </button>
-                    <ul class="dropdown-menu" role="menu">
-                        % for style in citation_styles:
-                            <li><a href="#" onclick="createCitation('${style}')">${style}</a></li>
-                        % endfor
-                    </ul>
-                </div>
-
+##                <div class="btn-group">
+##                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+##                      <span class="glyphicon glyphicon-pencil"></span>&nbsp; Cite
+##                      <span class="caret"></span>
+##                    </button>
+##                    <ul class="dropdown-menu" role="menu">
+##                        % for style in citation_styles:
+##                            <li><a href="#" onclick="createCitation('${style}')">${style}</a></li>
+##                        % endfor
+##                    </ul>
+##                </div>
+<!-- Button trigger modal -->
+<button class="btn btn-default dropdown-toggle" data-toggle="modal" data-target="#citationModal">
+    <span class="glyphicon glyphicon-pencil"></span>&nbsp;
+     Cite
+</button>
                 <div class="btn-group">
                     <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                       <span class="glyphicon glyphicon-export"></span>&nbsp; Export
@@ -90,12 +94,24 @@
              <td><strong>All Documents</strong></td>
 
         </tr>
+
        % for item in items:
+
          <tr>
             <td><input type="checkbox" name="select-all" id="select-all-checkbox"></td>
              <td>
                  <ul style="list-style: none;">
-                    <li>${item['title']}</li>
+                    <li>
+                        <a data-toggle="collapse" data-parent="#accordion" href=#${item['title']}>
+                             ${item['title']}
+                        </a>
+                           <div id=${item['title']} class="panel-collapse collapse out">
+                                <div class="panel-body">
+                                     Abstract goes her
+                                </div>
+                           </div>
+
+                    </li>
                     <li>${item['publisher']}</li>
                     <li>${item['type']}</li>
                  </ul>
@@ -106,3 +122,27 @@
 
     </table>
 </div>
+
+
+
+
+<!-- Display Citations Modal -->
+<div class="modal fade" id="citationModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="citationModalTitle">Citation</h4>
+      </div>
+      <div class="modal-body" id="citationModalBody">
+
+          Citation goes here
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
