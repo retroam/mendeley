@@ -184,15 +184,49 @@ def mendeley_page(*args, **kwargs):
     user_library = connect.library(mendeley.user_settings)
     documentId = user_library['document_ids']
     doc_meta = []
+
+    third_line = []
     for idx in range(0,len(documentId)-1):
         meta = connect.document_details(mendeley.user_settings,documentId[idx])
-        doc_meta.append({
-            "id": meta['id'],
-            "title":meta['title'],
-            "publisher": meta['published_in'],
-            "type": "book",
+        author = []
+        second_line = ''
+        for idy in range(0,len(meta['authors'])):
+            author.append({
+            'family':meta['authors'][idy]['surname'],
+            'given': meta['authors'][idy]['forename'],
             })
+            second_line = second_line + str(meta['authors'][idy]['forename']) + ' ' \
+                           + str(meta['authors'][idy]['surname']) + ', '
+        second_line = second_line[:-2]
+        second_line = second_line + ' (' + str(meta.get('year','0')) + ')'
 
+        third_line = str(meta['published_in']) + ' ' \
+                  + str(meta['volume']) + ' '  \
+                  + '(' + str(meta['issue']) + ')' + ' ' + \
+                  str(meta['pages'])
+
+        doc_meta.append({
+            "author": author,
+            "id": meta['id'],
+            "issued": {
+            "date-parts": [
+                [
+                    meta.get('year','0'),
+                    meta.get('month','0'),
+                    meta.get('day','0'),
+                ]
+            ]
+            },
+            "title": meta.get('title',"").replace('.',''),
+            "type": meta.get('type',"").lower(),
+            "abstract": meta.get('abstract',""),
+            "publisher": meta.get('published_in',""),
+            "volume": meta.get('volume',""),
+            "page": meta.get('pages',""),
+            "url": meta.get('url'," "),
+            "second_line": second_line,
+            "third_line": third_line,
+             })
 
 
 
@@ -211,111 +245,6 @@ def mendeley_page(*args, **kwargs):
 
 
 # TODO: Remove unnecessary API calls
-@must_be_contributor_or_public
-@must_have_addon('mendeley', 'node')
-# def mendeley_view_file(*args, **kwargs):
-#
-#     user = kwargs['user']
-#     node = kwargs['node'] or kwargs['project']
-#     mendeley = kwargs['node_addon']
-#
-#     path = kwargs.get('path')
-#     if path is None:
-#         raise HTTPError(http.NOT_FOUND)
-#
-#     connect = Mendeley.from_settings(mendeley.user_settings)
-#
-#     repo = connect.repo(mendeley.user, mendeley.repo)
-#
-#     # Get branch / commit
-#     branch = request.args.get('branch', repo['default_branch'])
-#     sha = request.args.get('sha', branch)
-#
-#     file_name, data, size = connect.file(
-#         mendeley.user, mendeley.repo, path, ref=sha,
-#     )
-#
-#     # Get file URL
-#     if repo is None or repo['private']:
-#         url = os.path.join(node.api_url, 'mendeley', 'file', path)
-#     else:
-#         url = raw_url(mendeley.user, mendeley.repo, sha, path)
-#
-#     # Get file history
-#     start_sha = (sha or branch) if node.is_registration else branch
-#     commits = connect.history(mendeley.user, mendeley.repo, path, sha=start_sha)
-#     for commit in commits:
-#         # TODO: Parameterize or remove hotlinking
-#         #if repo['private']:
-#         commit['download'] = os.path.join(node.api_url, 'mendeley', 'file', path) + '?ref=' + commit['sha']
-#         #else:
-#         #    commit['download'] = raw_url(mendeley.user, mendeley.repo, commit['sha'], path)
-#         commit['view'] = os.path.join(node.url, 'mendeley', 'file', path) + '?sha=' + commit['sha'] + '&branch=' + branch
-#
-#     # Get current commit
-#     shas = [
-#         commit['sha']
-#         for commit in commits
-#     ]
-#     current_sha = sha if sha in shas else shas[0]
-#
-#     # Pasted from views/file.py #
-#     # TODO: Replace with modular-file-renderer
-#
-#     _, file_ext = os.path.splitext(path.lower())
-#
-#     is_img = False
-#     for fmt in settings.IMG_FMTS:
-#         fmt_ptn = '^.{0}$'.format(fmt)
-#         if re.search(fmt_ptn, file_ext):
-#             is_img = True
-#             break
-#
-#     if is_img:
-#
-#         rendered='<img src="{url}/" />'.format(
-#             url=url,
-#         )
-#
-#     else:
-#
-#         if size > settings.MAX_RENDER_SIZE:
-#             rendered = (
-#                 '<p>This file is too large to be rendered online. '
-#                 'Please <a href={url} download={name}>download the file</a> to view it locally.</p>'
-#             ).format(
-#                 url=url,
-#                 name=file_name,
-#             )
-#
-#         else:
-#             try:
-#                 rendered = pygments.highlight(
-#                     data,
-#                     pygments.lexers.guess_lexer_for_filename(path, data),
-#                     pygments.formatters.HtmlFormatter()
-#                 )
-#             except pygments.util.ClassNotFound:
-#                 rendered = (
-#                     '<p>This file cannot be rendered online. '
-#                     'Please <a href={url} download={name}>download the file</a> to view it locally.</p>'
-#                 ).format(
-#                     url=url,
-#                     name=file_name,
-#                 )
-#
-#     # End pasted code #
-#
-#     rv = {
-#         'file_name': file_name,
-#         'current_sha': current_sha,
-#         'rendered': rendered,
-#         'download_url': url,
-#         'commits': commits,
-#     }
-#     rv.update(_view_project(node, user, primary=True))
-#     return rv
-
 
 @must_be_contributor
 @must_have_addon('mendeley', 'node')

@@ -102,23 +102,25 @@
              <td>
                  <ul style="list-style: none;">
                     <li>
-                        <a data-toggle="collapse" data-parent="#accordion" href=#${item['title']}>
+                        <a data-toggle="collapse" data-parent="#accordion" href=#${item['id']}>
                              ${item['title']}
                         </a>
-                           <div id=${item['title']} class="panel-collapse collapse out">
+                           <div id=${item['id']} class="panel-collapse collapse out">
                                 <div class="panel-body">
-                                     Abstract goes her
+                                     ${item['abstract']}
                                 </div>
                            </div>
 
                     </li>
-                    <li>${item['publisher']}</li>
-                    <li>${item['type']}</li>
+                    <li>${item['second_line']}</li>
+                    <li>${item['third_line']}</li>
+                    <li>${item['url']}</li>
+
                  </ul>
              </td>
         </tr>
-       % endfor
 
+       % endfor
 
     </table>
 </div>
