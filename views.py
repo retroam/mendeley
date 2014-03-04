@@ -31,7 +31,7 @@ from website.project.decorators import must_have_addon
 from website.project.views.node import _view_project
 
 from .api import Mendeley, raw_url
-from .auth import oauth_start_url, oauth_get_token
+from .auth import oauth_start_url, oauth_get_token, oauth_refresh_token
 from mendeley_client import *
 from . import settings as mendeley_settings
 
@@ -91,17 +91,6 @@ def _page_content(node, mendeley, branch=None, sha=None, hotlink=False, _connect
     has_auth = bool(mendeley.user_settings and mendeley.user_settings.has_auth)
     if has_auth:
         has_access = True
-    # params = urllib.urlencode({
-    #     key: value
-    #     for key, value in {
-    #         'branch': branch,
-    #         'sha': sha,
-    #     }.iteritems()
-    #     if value
-    # })
-    # upload_url = node.api_url + "mendeley/file/"
-    # if params:
-    #     upload_url += '?' + params
 
     collection = ""
     view_string = "All Items"
@@ -180,10 +169,26 @@ def mendeley_page(*args, **kwargs):
     mendeley = kwargs['node_addon']
     mendeley_user = user.get_addon('mendeley')
 
+
+    code = request.args.get('code')
+
+    token = oauth_refresh_token(mendeley_user.oauth_refresh_token,
+                                code,
+                                user,
+                               mendeley_user.oauth_token_expires,
+                               mendeley_user.oauth_token,)
+
+    mendeley_user.oauth_access_token = token['access_token']
+    mendeley_user.oauth_refresh_token = token['refresh_token']
+    mendeley_user.oauth_token_type = token['token_type']
+    mendeley_user.oauth_token_expires = token['expires_in']
+
     connect = Mendeley.from_settings(mendeley.user_settings)
     user_library = connect.library(mendeley.user_settings)
     documentId = user_library['document_ids']
     doc_meta = []
+
+
 
     third_line = []
     for idx in range(0,len(documentId)-1):
@@ -202,8 +207,8 @@ def mendeley_page(*args, **kwargs):
 
         third_line = str(meta['published_in']) + ' ' \
                   + str(meta['volume']) + ' '  \
-                  + '(' + str(meta['issue']) + ')' + ' ' + \
-                  str(meta['pages'])
+                  + '(' + str(meta.get('issue','')) + ')' + ' ' + \
+                  str(meta.get('pages',''))
 
         doc_meta.append({
             "author": author,
@@ -241,6 +246,18 @@ def mendeley_page(*args, **kwargs):
     rv.update(data)
 
     return rv
+
+
+@must_be_contributor_or_public
+@must_have_addon('mendeley', 'node')
+def mendeley_get_citation(*args,**kwargs):
+
+    user = kwargs['user']
+    node = kwargs['node'] or kwargs['project']
+    mendeley_node = node.get_addon('mendeley')
+
+    return None
+
 
 
 
@@ -363,7 +380,10 @@ def mendeley_oauth_callback(*args, **kwargs):
 
     mendeley_user.oauth_state = None
     mendeley_user.oauth_access_token = token['access_token']
+    mendeley_user.oauth_refresh_token = token['refresh_token']
     mendeley_user.oauth_token_type = token['token_type']
+    mendeley_user.oauth_token_expires = token['expires_in']
+    mendeley_user.oauth_token = token
 
     connect = Mendeley.from_settings(mendeley_user)
     user = connect.user()
@@ -379,3 +399,4 @@ def mendeley_oauth_callback(*args, **kwargs):
     if node:
         return redirect(os.path.join(node.url, 'settings'))
     return redirect('/settings/')
+

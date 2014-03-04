@@ -38,6 +38,7 @@ def oauth_start_url(user, node=None):
     )
     return session.authorization_url(OAUTH_AUTHORIZE_URL)
 
+##TODO pass parameters into token
 
 def oauth_get_token(code,user):
     """Get OAuth access token.
@@ -59,3 +60,28 @@ def oauth_get_token(code,user):
         code=code,
     )
 
+
+def oauth_refresh_token(code,refresh_token,user,expires_in,token):
+    """Refresh OAuth access token.
+
+    :param str code: Authorization code from provider
+    :return str: OAuth access token
+
+    """
+    redirect_uri = 'http://0.0.0.0:5000/api/v1/addons/mendeley/callback/%s/' % user._id
+    session = OAuth2Session(
+        mendeley_settings.CLIENT_ID,
+        redirect_uri=redirect_uri,
+        token=token,
+    )
+
+
+    return session.refresh_token(
+        OAUTH_ACCESS_TOKEN_URL,
+        client_secret=mendeley_settings.CLIENT_SECRET,
+        client_id=mendeley_settings.CLIENT_ID,
+        refresh_token=refresh_token,
+        code=code,
+        expires_in=expires_in,
+
+    )

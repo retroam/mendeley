@@ -98,7 +98,7 @@
        % for item in items:
 
          <tr>
-            <td><input type="checkbox" name="select-all" id="select-all-checkbox"></td>
+            <td><input type="checkbox" name="${item['id']}"></td>
              <td>
                  <ul style="list-style: none;">
                     <li>
@@ -114,13 +114,13 @@
                     </li>
                     <li>${item['second_line']}</li>
                     <li>${item['third_line']}</li>
-                    <li>${item['url']}</li>
+                    <li><a href="${item['url']}" target="_blank"> ${item['url']} </a></li>
 
                  </ul>
              </td>
         </tr>
 
-       % endfor
+       %endfor
 
     </table>
 </div>
