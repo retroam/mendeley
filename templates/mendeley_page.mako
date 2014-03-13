@@ -23,9 +23,22 @@
 
 % endif
 
+
+
+   <div class="container">
+
+           <script>
+            function getCitationURL(){
+                return "${api_url}mendeley/getCitation/"
+            }
+            function getExportBaseURL(){
+                return "${api_url}mendeley/getExport/"
+            }
+            </script>
+
 <div class="row mendeley-options-top">
 
-                <a href="${api_url}" type="button" class="btn btn-default"><span class="glyphicon glyphicon-home"></span>&nbsp; All Items</a>
+                <a href="${api_url}mendeley" type="button" class="btn btn-default"><span class="glyphicon glyphicon-home"></span>&nbsp; All Items</a>
 
                 <form role="form" id="mendeleyCollectionForm" style="display: inline;">
                     <input type="hidden" id="mendeleyCollectionName" name="collection" value="">
@@ -51,22 +64,18 @@
                     </div>
                 </form>
 
-##                <div class="btn-group">
-##                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-##                      <span class="glyphicon glyphicon-pencil"></span>&nbsp; Cite
-##                      <span class="caret"></span>
-##                    </button>
-##                    <ul class="dropdown-menu" role="menu">
-##                        % for style in citation_styles:
-##                            <li><a href="#" onclick="createCitation('${style}')">${style}</a></li>
-##                        % endfor
-##                    </ul>
-##                </div>
-<!-- Button trigger modal -->
-<button class="btn btn-default dropdown-toggle" data-toggle="modal" data-target="#citationModal">
-    <span class="glyphicon glyphicon-pencil"></span>&nbsp;
-     Cite
-</button>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                      <span class="glyphicon glyphicon-pencil"></span>&nbsp; Cite
+                      <span class="caret"></span>
+                    </button>
+                    <ul class="dropdown-menu" role="menu">
+                        % for style in citation_styles:
+                            <li><a href="#" onclick="createCitation('${style}')">${style}</a></li>
+                        % endfor
+                    </ul>
+                </div>
+
                 <div class="btn-group">
                     <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                       <span class="glyphicon glyphicon-export"></span>&nbsp; Export
@@ -148,3 +157,4 @@
   </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
 
+ </div>

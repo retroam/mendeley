@@ -32,8 +32,14 @@ from website.project.views.node import _view_project
 
 from .api import Mendeley, raw_url
 from .auth import oauth_start_url, oauth_get_token, oauth_refresh_token
-from mendeley_client import *
+
 from . import settings as mendeley_settings
+from citeproc import CitationStylesStyle, CitationStylesBibliography
+from citeproc import Citation, CitationItem
+from citeproc import formatter
+from citeproc.source.json import CiteProcJSON
+from flask import Flask, send_file
+import StringIO
 
 
 MESSAGE_BASE = 'via the Open Science Framework'
@@ -43,9 +49,28 @@ MESSAGES = {
     'delete': 'Deleted {0}'.format(MESSAGE_BASE),
 }
 
+CSL_PATH = '~/Documents/mendeley-oapi-example/citeproc/data/styles'
+
+CITATION_STYLES = { 'American Political Science Association' : 'american-political-science-association',
+                    'American Psychological Association' : 'apa',
+                    'American Sociological Association' : 'american-sociological-association',
+                    'Harvard Reference Format' : 'harvard1',
+                    'IEEE' : 'ieee',
+                    'Nature' : 'nature'}
+
+EXPORT_FORMATS = ['bibtex', 'coins', 'bookmarks', 'refer', 'wikipedia']
+
 @must_be_logged_in
 def mendeley_set_user_config(*args, **kwargs):
     return {}
+
+
+def _connect_to_library():
+    return None
+
+def parse_library():
+    return None
+
 
 def _collection(client):
     connect = Mendeley.from_settings(client.user_settings)
@@ -63,6 +88,18 @@ def _collection(client):
             })
 
     return doc_meta
+
+def _get_citation(library,style):
+    document_id = library['id']
+    bib_source = CiteProcJSON(library)
+    bib_style = CitationStylesStyle(style)
+    bibliography = CitationStylesBibliography(bib_style, bib_source,formatter.plain)
+
+    for id in range(0,len(document_id)-1):
+        citation = Citation([CitationItem(library[id]['id'])])
+        bibliography.register(citation)
+
+    return bibliography.bibliography()
 
 def _page_content(node, mendeley, branch=None, sha=None, hotlink=False, _connection=None):
     """Return the info to be rendered for a library.
@@ -114,7 +151,7 @@ def _page_content(node, mendeley, branch=None, sha=None, hotlink=False, _connect
         'collection':collection,
         'has_auth': has_auth,
         'has_access': has_access,
-        'api_url': node.api_url,
+        'api_url': node.url,
 
     }
 
@@ -190,7 +227,7 @@ def mendeley_page(*args, **kwargs):
 
 
 
-    third_line = []
+
     for idx in range(0,len(documentId)-1):
         meta = connect.document_details(mendeley.user_settings,documentId[idx])
         author = []
@@ -240,23 +277,14 @@ def mendeley_page(*args, **kwargs):
     rv.update({
         'addon_page_js': mendeley_user.config.include_js.get('page'),
         'addon_page_css': mendeley_user.config.include_css.get('page'),
-        'items': doc_meta
+        'items': doc_meta,
+        'citation_styles': CITATION_STYLES,
+        'export_formats': EXPORT_FORMATS,
     })
     rv.update(mendeley_user.config.to_json())
     rv.update(data)
 
     return rv
-
-
-@must_be_contributor_or_public
-@must_have_addon('mendeley', 'node')
-def mendeley_get_citation(*args,**kwargs):
-
-    user = kwargs['user']
-    node = kwargs['node'] or kwargs['project']
-    mendeley_node = node.get_addon('mendeley')
-
-    return None
 
 
 
@@ -320,10 +348,6 @@ def mendeley_oauth_delete_user(*args, **kwargs):
 
     mendeley_user = kwargs['user_addon']
 
-    # Remove webhooks
-    # for node_settings in mendeley_user.addonmendeleynodesettings__authorized:
-    #     node_settings.delete_hook()
-
     # Revoke access token
     connect = Mendeley.from_settings(mendeley_user)
     connect.revoke_token()
@@ -341,9 +365,6 @@ def mendeley_oauth_delete_node(*args, **kwargs):
 
     mendeley_node = kwargs['node_addon']
     user = models.User.load(kwargs.get('uid'))
-    # mendeley_user = user.get_addon('mendeley')
-    # Remove webhook
-    # mendeley_node.delete_hook()
 
     mendeley_node.user_settings = None
     mendeley_node.save()
@@ -400,3 +421,73 @@ def mendeley_oauth_callback(*args, **kwargs):
         return redirect(os.path.join(node.url, 'settings'))
     return redirect('/settings/')
 
+@must_be_contributor_or_public
+@must_have_addon('mendeley', 'node')
+def mendeley_export(*args, **kwargs):
+
+    user = kwargs['user']
+    node = kwargs['node'] or kwargs['project']
+
+    mendeley_node = node.get_addon('mendeley')
+    mendeley_user = user.get_addon('mendeley')
+
+    mendeley_data = _view_project(node, user, primary=True)
+
+    if mendeley_node:
+
+        keys = request.args.getlist('allKeys')
+        format = request.args.get('format')
+
+        if(format not in EXPORT_FORMATS):
+            raise HTTPError(http.BAD_REQUEST), "Export format not recognized"
+
+        if keys:
+            export = _get_citation(keys,format)
+            export = export.encode('utf-8')
+            print export
+        else:
+            export = 'No Items specified'
+
+
+        strIO = StringIO.StringIO()
+        strIO.write(str(export))
+        strIO.seek(0)
+
+        return send_file(strIO, attachment_filename="mendeley_export_"+format+".txt", as_attachment=True)
+
+    else:
+        raise HTTPError(http.BAD_REQUEST)
+
+@must_be_contributor_or_public
+@must_have_addon('mendeley', 'node')
+def mendeley_citation(*args, **kwargs):
+
+    user = kwargs['user']
+    node = kwargs['node'] or kwargs['project']
+
+    mendeley_node = node.get_addon('zotero')
+
+    mendeley_data = _view_project(node, user, primary=True)
+
+    if mendeley_node:
+        keys = request.json.get('allKeys')
+        style = request.json.get('style')
+
+        if(CITATION_STYLES.has_key(style)):
+            style = CITATION_STYLES[style]
+        else:
+            raise HTTPError(http.BAD_REQUEST)
+
+        if keys:
+            citations = _get_citation(mendeley_data['items'],style)
+        else:
+            citations = '<span>No Items specified</span>'
+
+        results = { "citationText": citations}
+
+        print citations
+
+        return [results]
+
+    else:
+        raise HTTPError(http.BAD_REQUEST)

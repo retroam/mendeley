@@ -25,7 +25,7 @@ class AddonMendeleyUserSettings(AddonUserSettingsBase):
     oauth_refresh_token = fields.StringField()
     oauth_token_type = fields.StringField()
     oauth_token_expires = fields.StringField()
-    oauth_token = fields.StringField()
+
 
     @property
     def has_auth(self):
