@@ -31,9 +31,15 @@ from website.project.decorators import must_have_addon
 from website.project.views.node import _view_project
 
 from .api import Mendeley, raw_url
-from .auth import oauth_start_url, oauth_get_token
-from mendeley_client import *
+from .auth import oauth_start_url, oauth_get_token, oauth_refresh_token
+
 from . import settings as mendeley_settings
+from citeproc import CitationStylesStyle, CitationStylesBibliography
+from citeproc import Citation, CitationItem
+from citeproc import formatter
+from citeproc.source.json import CiteProcJSON
+from flask import Flask, send_file
+import StringIO
 
 
 MESSAGE_BASE = 'via the Open Science Framework'
@@ -43,9 +49,28 @@ MESSAGES = {
     'delete': 'Deleted {0}'.format(MESSAGE_BASE),
 }
 
+CSL_PATH = '~/Documents/mendeley-oapi-example/citeproc/data/styles'
+
+CITATION_STYLES = { 'American Political Science Association' : 'american-political-science-association',
+                    'American Psychological Association' : 'apa',
+                    'American Sociological Association' : 'american-sociological-association',
+                    'Harvard Reference Format' : 'harvard1',
+                    'IEEE' : 'ieee',
+                    'Nature' : 'nature'}
+
+EXPORT_FORMATS = ['bibtex', 'coins', 'bookmarks', 'refer', 'wikipedia']
+
 @must_be_logged_in
 def mendeley_set_user_config(*args, **kwargs):
     return {}
+
+
+def _connect_to_library():
+    return None
+
+def parse_library():
+    return None
+
 
 def _collection(client):
     connect = Mendeley.from_settings(client.user_settings)
@@ -63,6 +88,18 @@ def _collection(client):
             })
 
     return doc_meta
+
+def _get_citation(library,style):
+    document_id = library['id']
+    bib_source = CiteProcJSON(library)
+    bib_style = CitationStylesStyle(style)
+    bibliography = CitationStylesBibliography(bib_style, bib_source,formatter.plain)
+
+    for id in range(0,len(document_id)-1):
+        citation = Citation([CitationItem(library[id]['id'])])
+        bibliography.register(citation)
+
+    return bibliography.bibliography()
 
 def _page_content(node, mendeley, branch=None, sha=None, hotlink=False, _connection=None):
     """Return the info to be rendered for a library.
@@ -91,17 +128,6 @@ def _page_content(node, mendeley, branch=None, sha=None, hotlink=False, _connect
     has_auth = bool(mendeley.user_settings and mendeley.user_settings.has_auth)
     if has_auth:
         has_access = True
-    # params = urllib.urlencode({
-    #     key: value
-    #     for key, value in {
-    #         'branch': branch,
-    #         'sha': sha,
-    #     }.iteritems()
-    #     if value
-    # })
-    # upload_url = node.api_url + "mendeley/file/"
-    # if params:
-    #     upload_url += '?' + params
 
     collection = ""
     view_string = "All Items"
@@ -125,7 +151,7 @@ def _page_content(node, mendeley, branch=None, sha=None, hotlink=False, _connect
         'collection':collection,
         'has_auth': has_auth,
         'has_access': has_access,
-        'api_url': node.api_url,
+        'api_url': node.url,
 
     }
 
@@ -180,19 +206,69 @@ def mendeley_page(*args, **kwargs):
     mendeley = kwargs['node_addon']
     mendeley_user = user.get_addon('mendeley')
 
+
+    code = request.args.get('code')
+
+    token = oauth_refresh_token(mendeley_user.oauth_refresh_token,
+                                code,
+                                user,
+                               mendeley_user.oauth_token_expires,
+                               mendeley_user.oauth_token,)
+
+    mendeley_user.oauth_access_token = token['access_token']
+    mendeley_user.oauth_refresh_token = token['refresh_token']
+    mendeley_user.oauth_token_type = token['token_type']
+    mendeley_user.oauth_token_expires = token['expires_in']
+
     connect = Mendeley.from_settings(mendeley.user_settings)
     user_library = connect.library(mendeley.user_settings)
     documentId = user_library['document_ids']
     doc_meta = []
+
+
+
+
     for idx in range(0,len(documentId)-1):
         meta = connect.document_details(mendeley.user_settings,documentId[idx])
-        doc_meta.append({
-            "id": meta['id'],
-            "title":meta['title'],
-            "publisher": meta['published_in'],
-            "type": "book",
+        author = []
+        second_line = ''
+        for idy in range(0,len(meta['authors'])):
+            author.append({
+            'family':meta['authors'][idy]['surname'],
+            'given': meta['authors'][idy]['forename'],
             })
+            second_line = second_line + str(meta['authors'][idy]['forename']) + ' ' \
+                           + str(meta['authors'][idy]['surname']) + ', '
+        second_line = second_line[:-2]
+        second_line = second_line + ' (' + str(meta.get('year','0')) + ')'
 
+        third_line = str(meta['published_in']) + ' ' \
+                  + str(meta['volume']) + ' '  \
+                  + '(' + str(meta.get('issue','')) + ')' + ' ' + \
+                  str(meta.get('pages',''))
+
+        doc_meta.append({
+            "author": author,
+            "id": meta['id'],
+            "issued": {
+            "date-parts": [
+                [
+                    meta.get('year','0'),
+                    meta.get('month','0'),
+                    meta.get('day','0'),
+                ]
+            ]
+            },
+            "title": meta.get('title',"").replace('.',''),
+            "type": meta.get('type',"").lower(),
+            "abstract": meta.get('abstract',""),
+            "publisher": meta.get('published_in',""),
+            "volume": meta.get('volume',""),
+            "page": meta.get('pages',""),
+            "url": meta.get('url'," "),
+            "second_line": second_line,
+            "third_line": third_line,
+             })
 
 
 
@@ -201,7 +277,9 @@ def mendeley_page(*args, **kwargs):
     rv.update({
         'addon_page_js': mendeley_user.config.include_js.get('page'),
         'addon_page_css': mendeley_user.config.include_css.get('page'),
-        'items': doc_meta
+        'items': doc_meta,
+        'citation_styles': CITATION_STYLES,
+        'export_formats': EXPORT_FORMATS,
     })
     rv.update(mendeley_user.config.to_json())
     rv.update(data)
@@ -210,112 +288,8 @@ def mendeley_page(*args, **kwargs):
 
 
 
-# TODO: Remove unnecessary API calls
-@must_be_contributor_or_public
-@must_have_addon('mendeley', 'node')
-# def mendeley_view_file(*args, **kwargs):
-#
-#     user = kwargs['user']
-#     node = kwargs['node'] or kwargs['project']
-#     mendeley = kwargs['node_addon']
-#
-#     path = kwargs.get('path')
-#     if path is None:
-#         raise HTTPError(http.NOT_FOUND)
-#
-#     connect = Mendeley.from_settings(mendeley.user_settings)
-#
-#     repo = connect.repo(mendeley.user, mendeley.repo)
-#
-#     # Get branch / commit
-#     branch = request.args.get('branch', repo['default_branch'])
-#     sha = request.args.get('sha', branch)
-#
-#     file_name, data, size = connect.file(
-#         mendeley.user, mendeley.repo, path, ref=sha,
-#     )
-#
-#     # Get file URL
-#     if repo is None or repo['private']:
-#         url = os.path.join(node.api_url, 'mendeley', 'file', path)
-#     else:
-#         url = raw_url(mendeley.user, mendeley.repo, sha, path)
-#
-#     # Get file history
-#     start_sha = (sha or branch) if node.is_registration else branch
-#     commits = connect.history(mendeley.user, mendeley.repo, path, sha=start_sha)
-#     for commit in commits:
-#         # TODO: Parameterize or remove hotlinking
-#         #if repo['private']:
-#         commit['download'] = os.path.join(node.api_url, 'mendeley', 'file', path) + '?ref=' + commit['sha']
-#         #else:
-#         #    commit['download'] = raw_url(mendeley.user, mendeley.repo, commit['sha'], path)
-#         commit['view'] = os.path.join(node.url, 'mendeley', 'file', path) + '?sha=' + commit['sha'] + '&branch=' + branch
-#
-#     # Get current commit
-#     shas = [
-#         commit['sha']
-#         for commit in commits
-#     ]
-#     current_sha = sha if sha in shas else shas[0]
-#
-#     # Pasted from views/file.py #
-#     # TODO: Replace with modular-file-renderer
-#
-#     _, file_ext = os.path.splitext(path.lower())
-#
-#     is_img = False
-#     for fmt in settings.IMG_FMTS:
-#         fmt_ptn = '^.{0}$'.format(fmt)
-#         if re.search(fmt_ptn, file_ext):
-#             is_img = True
-#             break
-#
-#     if is_img:
-#
-#         rendered='<img src="{url}/" />'.format(
-#             url=url,
-#         )
-#
-#     else:
-#
-#         if size > settings.MAX_RENDER_SIZE:
-#             rendered = (
-#                 '<p>This file is too large to be rendered online. '
-#                 'Please <a href={url} download={name}>download the file</a> to view it locally.</p>'
-#             ).format(
-#                 url=url,
-#                 name=file_name,
-#             )
-#
-#         else:
-#             try:
-#                 rendered = pygments.highlight(
-#                     data,
-#                     pygments.lexers.guess_lexer_for_filename(path, data),
-#                     pygments.formatters.HtmlFormatter()
-#                 )
-#             except pygments.util.ClassNotFound:
-#                 rendered = (
-#                     '<p>This file cannot be rendered online. '
-#                     'Please <a href={url} download={name}>download the file</a> to view it locally.</p>'
-#                 ).format(
-#                     url=url,
-#                     name=file_name,
-#                 )
-#
-#     # End pasted code #
-#
-#     rv = {
-#         'file_name': file_name,
-#         'current_sha': current_sha,
-#         'rendered': rendered,
-#         'download_url': url,
-#         'commits': commits,
-#     }
-#     rv.update(_view_project(node, user, primary=True))
-#     return rv
 
+# TODO: Remove unnecessary API calls
 
 @must_be_contributor
 @must_have_addon('mendeley', 'node')
@@ -374,10 +348,6 @@ def mendeley_oauth_delete_user(*args, **kwargs):
 
     mendeley_user = kwargs['user_addon']
 
-    # Remove webhooks
-    # for node_settings in mendeley_user.addonmendeleynodesettings__authorized:
-    #     node_settings.delete_hook()
-
     # Revoke access token
     connect = Mendeley.from_settings(mendeley_user)
     connect.revoke_token()
@@ -395,9 +365,6 @@ def mendeley_oauth_delete_node(*args, **kwargs):
 
     mendeley_node = kwargs['node_addon']
     user = models.User.load(kwargs.get('uid'))
-    # mendeley_user = user.get_addon('mendeley')
-    # Remove webhook
-    # mendeley_node.delete_hook()
 
     mendeley_node.user_settings = None
     mendeley_node.save()
@@ -434,7 +401,10 @@ def mendeley_oauth_callback(*args, **kwargs):
 
     mendeley_user.oauth_state = None
     mendeley_user.oauth_access_token = token['access_token']
+    mendeley_user.oauth_refresh_token = token['refresh_token']
     mendeley_user.oauth_token_type = token['token_type']
+    mendeley_user.oauth_token_expires = token['expires_in']
+    mendeley_user.oauth_token = token
 
     connect = Mendeley.from_settings(mendeley_user)
     user = connect.user()
@@ -450,3 +420,74 @@ def mendeley_oauth_callback(*args, **kwargs):
     if node:
         return redirect(os.path.join(node.url, 'settings'))
     return redirect('/settings/')
+
+@must_be_contributor_or_public
+@must_have_addon('mendeley', 'node')
+def mendeley_export(*args, **kwargs):
+
+    user = kwargs['user']
+    node = kwargs['node'] or kwargs['project']
+
+    mendeley_node = node.get_addon('mendeley')
+    mendeley_user = user.get_addon('mendeley')
+
+    mendeley_data = _view_project(node, user, primary=True)
+
+    if mendeley_node:
+
+        keys = request.args.getlist('allKeys')
+        format = request.args.get('format')
+
+        if(format not in EXPORT_FORMATS):
+            raise HTTPError(http.BAD_REQUEST), "Export format not recognized"
+
+        if keys:
+            export = _get_citation(keys,format)
+            export = export.encode('utf-8')
+            print export
+        else:
+            export = 'No Items specified'
+
+
+        strIO = StringIO.StringIO()
+        strIO.write(str(export))
+        strIO.seek(0)
+
+        return send_file(strIO, attachment_filename="mendeley_export_"+format+".txt", as_attachment=True)
+
+    else:
+        raise HTTPError(http.BAD_REQUEST)
+
+@must_be_contributor_or_public
+@must_have_addon('mendeley', 'node')
+def mendeley_citation(*args, **kwargs):
+
+    user = kwargs['user']
+    node = kwargs['node'] or kwargs['project']
+
+    mendeley_node = node.get_addon('zotero')
+
+    mendeley_data = _view_project(node, user, primary=True)
+
+    if mendeley_node:
+        keys = request.json.get('allKeys')
+        style = request.json.get('style')
+
+        if(CITATION_STYLES.has_key(style)):
+            style = CITATION_STYLES[style]
+        else:
+            raise HTTPError(http.BAD_REQUEST)
+
+        if keys:
+            citations = _get_citation(mendeley_data['items'],style)
+        else:
+            citations = '<span>No Items specified</span>'
+
+        results = { "citationText": citations}
+
+        print citations
+
+        return [results]
+
+    else:
+        raise HTTPError(http.BAD_REQUEST)

@@ -22,20 +22,13 @@ CONFIGS = ['user', 'node']
 CATEGORIES = ['bibliography']
 
 INCLUDE_JS = {
-    'widget': ['jquery.githubRepoWidget.js'],
-    'page': [
-        '/static/vendor/jquery-drag-drop/jquery.event.drag-2.2.js',
-        '/static/vendor/jquery-drag-drop/jquery.event.drop-2.2.js',
-        '/static/vendor/dropzone/dropzone.js',
-        '/static/js/slickgrid.custom.min.js',
-        '/static/js/hgrid.js',
-        'hgrid-github.js',
-    ],
+    'widget': ['jquery.mendeleyRepoWidget.js'],
+    'page': ['mendeley.js'],
 }
 
 INCLUDE_CSS = {
     'widget': [],
-    'page': ['/static/css/hgrid-base.css'],
+    'page': ['mendeley.css'],
 }
 
 WIDGET_HELP = 'Mendeley Add-on Alpha'
