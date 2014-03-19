@@ -1,10 +1,19 @@
 from .model import AddonMendeleyUserSettings, AddonMendeleyNodeSettings
 from .routes import settings_routes, page_routes, api_routes
 
-USER_SETTINGS_MODEL = AddonMendeleyUserSettings
-NODE_SETTINGS_MODEL = AddonMendeleyNodeSettings
 
-ROUTES = [api_routes, settings_routes, page_routes]
+
+MODELS = [
+    model.AddonMendeleyUserSettings,
+    model.AddonMendeleyNodeSettings,
+]
+
+USER_SETTINGS_MODEL = model.AddonMendeleyUserSettings
+NODE_SETTINGS_MODEL = model.AddonMendeleyNodeSettings
+
+ROUTES = [routes.api_routes, routes.settings_routes, routes.page_routes]
+
+#ROUTES = [api_routes, settings_routes, page_routes]
 
 SHORT_NAME = 'mendeley'
 FULL_NAME = 'Mendeley'

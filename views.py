@@ -4,36 +4,30 @@
 
 
 import os
-import re
-import json
-import urllib
-import datetime
-import pygments
+
 import httplib as http
-from collections import namedtuple
-import logging
 
-from hurry.filesize import size, alternative
-from dateutil.parser import parse as dateparse
 
-from framework import request, redirect, make_response
-from framework.auth import get_current_user, must_be_logged_in, must_have_session_auth
-from framework.flask import secure_filename
+from framework import request, redirect
+from framework.auth import get_current_user
+from framework.auth.decorators import must_be_logged_in
+
 from framework.exceptions import HTTPError
 
+
+
 from website import models
-from website import settings
-from website.project import decorators
+
 from website.project.decorators import must_be_contributor
 from website.project.decorators import must_be_contributor_or_public
-from website.project.decorators import must_not_be_registration
+
 from website.project.decorators import must_have_addon
 from website.project.views.node import _view_project
 
-from .api import Mendeley, raw_url
+from .api import Mendeley
 from .auth import oauth_start_url, oauth_get_token, oauth_refresh_token
 
-from . import settings as mendeley_settings
+
 from citeproc import CitationStylesStyle, CitationStylesBibliography
 from citeproc import Citation, CitationItem
 from citeproc import formatter
