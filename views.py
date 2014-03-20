@@ -195,17 +195,17 @@ def mendeley_widget(*args, **kwargs):
 @must_have_addon('mendeley', 'node')
 def mendeley_page(*args, **kwargs):
 
-    user = kwargs['user']
+    user = kwargs['auth']
     node = kwargs['node'] or kwargs['project']
     mendeley = kwargs['node_addon']
-    mendeley_user = user.get_addon('mendeley')
+    mendeley_user = user.user.get_addon('mendeley')
 
 
     code = request.args.get('code')
 
     token = oauth_refresh_token(mendeley_user.oauth_refresh_token,
                                 code,
-                                user,
+                                user.user,
                                mendeley_user.oauth_token_expires,
                                mendeley_user.oauth_token,)
 
@@ -419,11 +419,11 @@ def mendeley_oauth_callback(*args, **kwargs):
 @must_have_addon('mendeley', 'node')
 def mendeley_export(*args, **kwargs):
 
-    user = kwargs['user']
+    user = kwargs['auth']
     node = kwargs['node'] or kwargs['project']
 
     mendeley_node = node.get_addon('mendeley')
-    mendeley_user = user.get_addon('mendeley')
+    mendeley_user = user.user.get_addon('mendeley')
 
     mendeley_data = _view_project(node, user, primary=True)
 
