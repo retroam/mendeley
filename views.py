@@ -59,11 +59,73 @@ def mendeley_set_user_config(*args, **kwargs):
     return {}
 
 
-def _connect_to_library():
-    return None
+def _connect_to_library(mendeley_user, mendeley, user):
 
-def parse_library():
-    return None
+    code = None
+    token = oauth_refresh_token(mendeley_user.oauth_refresh_token,
+                                code,
+                                user.user,
+                               mendeley_user.oauth_token_expires,
+                               mendeley_user.oauth_token,)
+
+    mendeley_user.oauth_access_token = token['access_token']
+    mendeley_user.oauth_refresh_token = token['refresh_token']
+    mendeley_user.oauth_token_type = token['token_type']
+    mendeley_user.oauth_token_expires = token['expires_in']
+
+    connect = Mendeley.from_settings(mendeley.user_settings)
+    return connect
+
+
+def parse_library(connect, mendeley):
+
+    user_library = connect.library(mendeley.user_settings)
+    document_id = user_library['document_ids']
+    doc_meta = []
+
+    for idx in range(0, len(document_id)-1):
+        meta = connect.document_details(mendeley.user_settings, document_id[idx])
+        author = []
+        second_line = ''
+        for idy in range(0, len(meta['authors'])):
+            author.append({
+                'family':meta['authors'][idy]['surname'],
+                'given': meta['authors'][idy]['forename'],
+            })
+            second_line = second_line + str(meta['authors'][idy]['forename']) + ' ' \
+                           + str(meta['authors'][idy]['surname']) + ', '
+        second_line = second_line[:-2]
+        second_line = second_line + ' (' + str(meta.get('year', '0')) + ')'
+
+        third_line = str(meta['published_in']) + ' ' \
+            + str(meta['volume']) + ' '  \
+            + '(' + str(meta.get('issue', '')) + ')' + ' ' + \
+            str(meta.get('pages', ''))
+
+        doc_meta.append({
+            "author": author,
+            "id": meta['id'],
+            "issued": {
+            "date-parts": [
+                [
+                    meta.get('year', '0'),
+                    meta.get('month', '0'),
+                    meta.get('day', '0'),
+                ]
+            ]
+            },
+            "title": meta.get('title', "").replace('.', ''),
+            "type": meta.get('type', "").lower(),
+            "abstract": meta.get('abstract', ""),
+            "publisher": meta.get('published_in', ""),
+            "volume": meta.get('volume', ""),
+            "page": meta.get('pages', ""),
+            "url": meta.get('url', " "),
+            "second_line": second_line,
+            "third_line": third_line,
+             })
+
+    return doc_meta
 
 
 def _collection(client):
@@ -83,13 +145,13 @@ def _collection(client):
 
     return doc_meta
 
-def _get_citation(library,style):
-    document_id = library['id']
+def _get_citation(library, document_id, style):
+
     bib_source = CiteProcJSON(library)
     bib_style = CitationStylesStyle(style)
-    bibliography = CitationStylesBibliography(bib_style, bib_source,formatter.plain)
+    bibliography = CitationStylesBibliography(bib_style, bib_source, formatter.plain)
 
-    for id in range(0,len(document_id)-1):
+    for id in range(0, len(document_id)-1):
         citation = Citation([CitationItem(library[id]['id'])])
         bibliography.register(citation)
 
@@ -267,6 +329,7 @@ def mendeley_page(*args, **kwargs):
 
 
     data = _view_project(node, user, primary=True)
+
     rv = _page_content(node, mendeley)
     rv.update({
         'addon_page_js': mendeley_user.config.include_js.get('page'),
@@ -421,11 +484,13 @@ def mendeley_export(*args, **kwargs):
 
     user = kwargs['auth']
     node = kwargs['node'] or kwargs['project']
-
+    mendeley = kwargs['node_addon']
     mendeley_node = node.get_addon('mendeley')
     mendeley_user = user.user.get_addon('mendeley')
 
-    mendeley_data = _view_project(node, user, primary=True)
+    library_connect = _connect_to_library(mendeley_user, mendeley, user)
+    library = parse_library(library_connect, mendeley)
+
 
     if mendeley_node:
 
@@ -436,7 +501,7 @@ def mendeley_export(*args, **kwargs):
             raise HTTPError(http.BAD_REQUEST), "Export format not recognized"
 
         if keys:
-            export = _get_citation(keys,format)
+            export = _get_citation(library, keys, format)
             export = export.encode('utf-8')
             print export
         else:
@@ -467,17 +532,17 @@ def mendeley_citation(*args, **kwargs):
         keys = request.json.get('allKeys')
         style = request.json.get('style')
 
-        if(CITATION_STYLES.has_key(style)):
+        if CITATION_STYLES in style:
             style = CITATION_STYLES[style]
         else:
             raise HTTPError(http.BAD_REQUEST)
 
         if keys:
-            citations = _get_citation(mendeley_data['items'],style)
+            citations = _get_citation(mendeley_data['items'], style)
         else:
             citations = '<span>No Items specified</span>'
 
-        results = { "citationText": citations}
+        results = {"citationText": citations}
 
         print citations
 
