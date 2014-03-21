@@ -276,57 +276,8 @@ def mendeley_page(*args, **kwargs):
     mendeley_user.oauth_token_type = token['token_type']
     mendeley_user.oauth_token_expires = token['expires_in']
 
-    connect = Mendeley.from_settings(mendeley.user_settings)
-    user_library = connect.library(mendeley.user_settings)
-    documentId = user_library['document_ids']
-    doc_meta = []
-
-
-
-
-    for idx in range(0,len(documentId)-1):
-        meta = connect.document_details(mendeley.user_settings,documentId[idx])
-        author = []
-        second_line = ''
-        for idy in range(0,len(meta['authors'])):
-            author.append({
-            'family':meta['authors'][idy]['surname'],
-            'given': meta['authors'][idy]['forename'],
-            })
-            second_line = second_line + str(meta['authors'][idy]['forename']) + ' ' \
-                           + str(meta['authors'][idy]['surname']) + ', '
-        second_line = second_line[:-2]
-        second_line = second_line + ' (' + str(meta.get('year','0')) + ')'
-
-        third_line = str(meta['published_in']) + ' ' \
-                  + str(meta['volume']) + ' '  \
-                  + '(' + str(meta.get('issue','')) + ')' + ' ' + \
-                  str(meta.get('pages',''))
-
-        doc_meta.append({
-            "author": author,
-            "id": meta['id'],
-            "issued": {
-            "date-parts": [
-                [
-                    meta.get('year','0'),
-                    meta.get('month','0'),
-                    meta.get('day','0'),
-                ]
-            ]
-            },
-            "title": meta.get('title',"").replace('.',''),
-            "type": meta.get('type',"").lower(),
-            "abstract": meta.get('abstract',""),
-            "publisher": meta.get('published_in',""),
-            "volume": meta.get('volume',""),
-            "page": meta.get('pages',""),
-            "url": meta.get('url'," "),
-            "second_line": second_line,
-            "third_line": third_line,
-             })
-
-
+    library_connect = _connect_to_library(mendeley_user, mendeley, user)
+    library = parse_library(library_connect, mendeley)
 
     data = _view_project(node, user, primary=True)
 
@@ -334,7 +285,7 @@ def mendeley_page(*args, **kwargs):
     rv.update({
         'addon_page_js': mendeley_user.config.include_js.get('page'),
         'addon_page_css': mendeley_user.config.include_css.get('page'),
-        'items': doc_meta,
+        'items': library,
         'citation_styles': CITATION_STYLES,
         'export_formats': EXPORT_FORMATS,
     })
