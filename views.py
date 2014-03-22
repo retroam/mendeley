@@ -27,7 +27,7 @@ from website.project.views.node import _view_project
 from .api import Mendeley
 from .auth import oauth_start_url, oauth_get_token, oauth_refresh_token
 
-
+from citeproc.py2compat import *
 from citeproc import CitationStylesStyle, CitationStylesBibliography
 from citeproc import Citation, CitationItem
 from citeproc import formatter
@@ -138,7 +138,7 @@ def _collection(client):
         meta = connect.document_details(client.user_settings,documentId[idx])
         doc_meta.append({
             "id": meta['id'],
-            "title":meta['title'],
+            "title": meta['title'],
             "publisher": meta['published_in'],
             "type": "book",
             })
@@ -151,9 +151,12 @@ def _get_citation(library, document_id, style):
     bib_style = CitationStylesStyle(style)
     bibliography = CitationStylesBibliography(bib_style, bib_source, formatter.plain)
 
-    for id in range(0, len(document_id)-1):
-        citation = Citation([CitationItem(library[id]['id'])])
-        bibliography.register(citation)
+    # for idx in document_id:
+    #     citation = Citation([CitationItem(idx)])
+    #     bibliography.register(citation)
+
+    citation = Citation([CitationItem('6147361191')])
+    bibliography.register(citation)
 
     return bibliography.bibliography()
 
@@ -442,13 +445,12 @@ def mendeley_export(*args, **kwargs):
     library_connect = _connect_to_library(mendeley_user, mendeley, user)
     library = parse_library(library_connect, mendeley)
 
-
     if mendeley_node:
 
         keys = request.args.getlist('allKeys')
         format = request.args.get('format')
 
-        if(format not in EXPORT_FORMATS):
+        if format not in EXPORT_FORMATS:
             raise HTTPError(http.BAD_REQUEST), "Export format not recognized"
 
         if keys:
