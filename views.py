@@ -493,7 +493,7 @@ def mendeley_citation(*args, **kwargs):
             raise HTTPError(http.BAD_REQUEST)
 
         if keys:
-            citations = _get_citation(library, keys, format)
+            citations = _get_citation(library, keys, style)
         else:
             citations = '<span>No Items specified</span>'
 
