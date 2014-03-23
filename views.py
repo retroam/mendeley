@@ -158,7 +158,7 @@ def _get_citation(library, document_id, style):
     citation = Citation([CitationItem('6147361191')])
     bibliography.register(citation)
 
-    return bibliography.bibliography()
+    return bibliography
 
 def _page_content(node, mendeley, branch=None, sha=None, hotlink=False, _connection=None):
     """Return the info to be rendered for a library.
