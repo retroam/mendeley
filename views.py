@@ -474,12 +474,14 @@ def mendeley_export(*args, **kwargs):
 @must_have_addon('mendeley', 'node')
 def mendeley_citation(*args, **kwargs):
 
-    user = kwargs['user']
+    user = kwargs['auth']
     node = kwargs['node'] or kwargs['project']
+    mendeley = kwargs['node_addon']
+    mendeley_node = node.get_addon('mendeley')
+    mendeley_user = user.user.get_addon('mendeley')
 
-    mendeley_node = node.get_addon('zotero')
-
-    mendeley_data = _view_project(node, user, primary=True)
+    library_connect = _connect_to_library(mendeley_user, mendeley, user)
+    library = parse_library(library_connect, mendeley)
 
     if mendeley_node:
         keys = request.json.get('allKeys')
@@ -491,7 +493,7 @@ def mendeley_citation(*args, **kwargs):
             raise HTTPError(http.BAD_REQUEST)
 
         if keys:
-            citations = _get_citation(mendeley_data['items'], style)
+            citations = _get_citation(library, keys, format)
         else:
             citations = '<span>No Items specified</span>'
 
