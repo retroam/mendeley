@@ -455,12 +455,12 @@ def mendeley_export(*args, **kwargs):
 
         if keys:
             export = _get_citation(library, keys, format)
-            export = export.encode('utf-8')
+            export = export.bibliography()
             print export
         else:
             export = 'No Items specified'
 
-
+        raise Exception
         strIO = StringIO.StringIO()
         strIO.write(str(export))
         strIO.seek(0)
