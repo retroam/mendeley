@@ -28,7 +28,7 @@ def oauth_start_url(user, node=None):
     if node:
         uri_parts.append(node._id)
    # redirect_uri = 'http://0.0.0.0:5000/api/v1/addons/mendeley/callback/%s/' % user._id
-    redirect_uri = 'http://0.0.0.0:5000/api/v1/addons/mendeley/callback/'
+    redirect_uri = 'http://0.0.0.0:5000/api/v1/addons/mendeley/callback/54uqn/'
 
 
 
