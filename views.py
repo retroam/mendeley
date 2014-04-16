@@ -389,7 +389,6 @@ def mendeley_oauth_callback(*args, **kwargs):
     user = models.User.load(kwargs.get('uid'))
     node = models.Node.load(kwargs.get('nid'))
 
-    raise Exception
 
     if user is None:
         raise HTTPError(http.NOT_FOUND)
