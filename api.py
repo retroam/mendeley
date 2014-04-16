@@ -139,7 +139,7 @@ class Mendeley(object):
         """Get library from user collection
         """
         return self._send(
-            os.path.join(API_URL, 'library', 'documents' ,doc_id)
+            os.path.join(API_URL, 'library', 'documents' , doc_id)
         )
 
 
