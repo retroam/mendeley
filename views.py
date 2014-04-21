@@ -445,8 +445,7 @@ def mendeley_oauth_delete_node(*args, **kwargs):
 
 def mendeley_oauth_callback(*args, **kwargs):
 
-
-    user = models.User.load(kwargs.get('uid'))
+    user = models.User.load(request.args.get('state'))
     node = models.Node.load(kwargs.get('nid'))
 
     if user is None:
