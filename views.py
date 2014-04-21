@@ -82,9 +82,19 @@ def parse_library(connect, mendeley):
     user_library = connect.library(mendeley.user_settings)
     document_id = user_library['document_ids']
     doc_meta = []
-
-    for idx in range(0, len(document_id)-1):
+    for idx in range(0, len(document_id)):
         meta = connect.document_details(mendeley.user_settings, document_id[idx])
+        date_parts = []
+
+        if meta.get('year', '0') != 0:
+            date_parts.append([meta['year']])
+        elif meta.get('month', '0') != 0:
+            date_parts.append([meta['month']])
+        elif meta.get('day', '0') != 0:
+            date_parts.append([meta['day']])
+
+
+
         author = []
         second_line = ''
         for idy in range(0, len(meta['authors'])):
@@ -102,17 +112,12 @@ def parse_library(connect, mendeley):
             + '(' + str(meta.get('issue', '')) + ')' + ' ' + \
             str(meta.get('pages', ''))
 
+
         doc_meta.append({
             "author": author,
             "id": meta['id'],
             "issued": {
-            "date-parts": [
-                [
-                    meta.get('year', '0'),
-                    meta.get('month', '0'),
-                    meta.get('day', '0'),
-                ]
-            ]
+            "date-parts": date_parts,
             },
             "title": meta.get('title', "").replace('.', ''),
             "type": meta.get('type', "").lower(),
@@ -120,7 +125,7 @@ def parse_library(connect, mendeley):
             "publisher": meta.get('published_in', ""),
             "volume": meta.get('volume', ""),
             "page": meta.get('pages', ""),
-            "url": meta.get('url', " "),
+            "URL": meta.get('url', " "),
             "second_line": second_line,
             "third_line": third_line,
              })
@@ -151,7 +156,7 @@ def _get_citation(library, document_id, style):
     bib_style = CitationStylesStyle(style)
     bibliography = CitationStylesBibliography(bib_style, bib_source, formatter.plain)
 
-    for id in range(0, len(document_id)-1):
+    for id in range(0, len(document_id)):
         citation = Citation([CitationItem(library[id]['id'])])
         bibliography.register(citation)
 
@@ -278,13 +283,21 @@ def mendeley_page(*args, **kwargs):
 
     connect = Mendeley.from_settings(mendeley.user_settings)
     user_library = connect.library(mendeley.user_settings)
+    user_folders = connect.folders(mendeley.user_settings)
+    user_folders_id = []
+
+    for idx in range(0, len(user_folders)):
+        user_folders_id.append(user_folders[idx]['id'])
+        user_folders_name = user_folders['name']
+
+
     documentId = user_library['document_ids']
     doc_meta = []
 
 
 
 
-    for idx in range(0,len(documentId)-1):
+    for idx in range(0,len(documentId)):
         meta = connect.document_details(mendeley.user_settings,documentId[idx])
         author = []
         second_line = ''
@@ -325,8 +338,6 @@ def mendeley_page(*args, **kwargs):
             "second_line": second_line,
             "third_line": third_line,
              })
-
-
 
     data = _view_project(node, user, primary=True)
 
@@ -521,24 +532,27 @@ def mendeley_export(*args, **kwargs):
 @must_have_addon('mendeley', 'node')
 def mendeley_citation(*args, **kwargs):
 
-    user = kwargs['user']
+    user = kwargs['auth']
     node = kwargs['node'] or kwargs['project']
+    mendeley = kwargs['node_addon']
+    mendeley_node = node.get_addon('mendeley')
+    mendeley_user = user.user.get_addon('mendeley')
 
-    mendeley_node = node.get_addon('zotero')
+    library_connect = _connect_to_library(mendeley_user, mendeley, user)
+    library = parse_library(library_connect, mendeley)
 
-    mendeley_data = _view_project(node, user, primary=True)
 
     if mendeley_node:
         keys = request.json.get('allKeys')
         style = request.json.get('style')
 
-        if CITATION_STYLES in style:
-            style = CITATION_STYLES[style]
+        if style not in CITATION_STYLES:
+            raise HTTPError(http.BAD_REQUEST), "Export format not recognized"
         else:
-            raise HTTPError(http.BAD_REQUEST)
+            style = CITATION_STYLES[style]
 
         if keys:
-            citations = _get_citation(mendeley_data['items'], style)
+            citations = _get_citation(library, keys, style)
         else:
             citations = '<span>No Items specified</span>'
 

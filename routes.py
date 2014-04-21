@@ -20,37 +20,7 @@ settings_routes = {
             '/project/<pid>/mendeley/widget/',
             '/project/<pid>/node/<nid>/mendeley/widget/',
         ], 'get', views.mendeley_widget, json_renderer),
-        # Rule([
-        #     '/project/<pid>/mendeley/file/<path:path>',
-        #     '/project/<pid>/node/<nid>/mendeley/file/<path:path>',
-        # ], 'get', views.mendeley_download_file, json_renderer),
-        # Rule([
-        #     '/project/<pid>/mendeley/',
-        #     '/project/<pid>/node/<nid>/mendeley/',
-        # ], 'get', views.mendeley_get_repo, json_renderer),
-        # Rule([
-        #     '/project/<pid>/mendeley/file/',
-        #     '/project/<pid>/mendeley/file/<path:path>',
-        #     '/project/<pid>/node/<nid>/mendeley/file/',
-        #     '/project/<pid>/node/<nid>/mendeley/file/<path:path>',
-        # ], 'post', views.mendeley_upload_file, json_renderer),
-        # Rule([
-        #     '/project/<pid>/mendeley/file/<path:path>',
-        #     '/project/<pid>/node/<nid>/mendeley/file/<path:path>',
-        # ], 'delete', views.mendeley_delete_file, json_renderer),
-        # Rule([
-        #     '/project/<pid>/mendeley/tarball/',
-        #     '/project/<pid>/node/<nid>/mendeley/tarball/',
-        # ], 'get', views.mendeley_download_starball, json_renderer, {'archive': 'tar'}, endpoint_suffix='__tar'),
-        # Rule([
-        #     '/project/<pid>/mendeley/zipball/',
-        #     '/project/<pid>/node/<nid>/mendeley/zipball/',
-        # ], 'get', views.mendeley_download_starball, json_renderer, {'archive': 'zip'}, endpoint_suffix='__zip'),
 
-        # Rule([
-        #     '/project/<pid>/mendeley/hook/',
-        #     '/project/<pid>/node/<nid>mendeley/hook/',
-        # ], 'post', views.mendeley_hook_callback, json_renderer),
 
         # OAuth: User
         Rule(
@@ -111,7 +81,7 @@ page_routes = {
         Rule([
             '/project/<pid>/mendeley/getCitation',
             '/project/<pid>/node/<nid>/getCitation',
-        ], 'get', views.mendeley_citation, OsfWebRenderer('../addons/mendeley/templates/mendeley_page.mako')),
+        ], 'post', views.mendeley_citation, json_renderer),
         Rule([
             '/project/<pid>/mendeley/getExport',
             '/project/<pid>/node/<nid>/getExport',

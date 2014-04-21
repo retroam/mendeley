@@ -135,8 +135,22 @@ class Mendeley(object):
             os.path.join(API_URL, 'library')
         )
 
+    def folders(self, user):
+        """Get folders from user collection
+        """
+        return self._send(
+            os.path.join(API_URL, 'library', 'folders')
+        )
+
+    def folder_details(self, user, folder_id):
+        """Get folders from user collection
+        """
+        return self._send(
+            os.path.join(API_URL, 'library', 'folders', folder_id)
+        )
+
     def document_details(self, user,doc_id):
-        """Get library from user collection
+        """Get document details from user collection
         """
         return self._send(
             os.path.join(API_URL, 'library','documents',doc_id)

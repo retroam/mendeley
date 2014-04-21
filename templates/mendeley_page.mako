@@ -1,4 +1,3 @@
-
 <%inherit file="project/addon/page.mako" />
 
 
@@ -48,8 +47,8 @@
                           <span class="caret"></span>
                         </button>
                         <ul class="dropdown-menu" role="menu">
-                        % if len(collection_names) > 0:
-                            % for name in collection_names:
+                        % if len(folder_names) > 0:
+                            % for name in folder_names:
                                 <li onclick="$('#mendeleyCollectionName').val('${name}');$('#mendeleyCollectionForm').submit()">
                                     <a href="#">${name}</a>
                                 </li>
