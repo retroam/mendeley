@@ -27,8 +27,7 @@ def oauth_start_url(user, node=None):
     ]
     if node:
         uri_parts.append(node._id)
-   # redirect_uri = 'http://0.0.0.0:5000/api/v1/addons/mendeley/callback/%s/' % user._id
-    redirect_uri = 'http://0.0.0.0:5000/api/v1/addons/mendeley/callback/j2isr'
+    redirect_uri = 'http://0.0.0.0:5000/api/v1/addons/mendeley/callback/%s/' % user._id
 
 
 
@@ -48,7 +47,7 @@ def oauth_get_token(code,user):
     :return str: OAuth access token
 
     """
-    redirect_uri = 'http://0.0.0.0:5000/api/v1/addons/mendeley/callback/j2isr'
+    redirect_uri = 'http://0.0.0.0:5000/api/v1/addons/mendeley/callback/%s/' % user._id
     session = OAuth2Session(
         mendeley_settings.CLIENT_ID,
         redirect_uri=redirect_uri
@@ -69,8 +68,7 @@ def oauth_refresh_token(code,refresh_token,user,expires_in,token):
     :return str: OAuth access token
 
     """
-    redirect_uri = 'http://0.0.0.0:5000/api/v1/addons/mendeley/callback/j2isr'
-    #redirect_uri = 'http://0.0.0.0:5000/api/v1/addons/mendeley/callback/%s/' % user._id
+    redirect_uri = 'http://0.0.0.0:5000/api/v1/addons/mendeley/callback/%s/' % user._id
     session = OAuth2Session(
         mendeley_settings.CLIENT_ID,
         redirect_uri=redirect_uri,

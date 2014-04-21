@@ -27,7 +27,7 @@ from website.project.views.node import _view_project
 from .api import Mendeley
 from .auth import oauth_start_url, oauth_get_token, oauth_refresh_token
 
-from citeproc.py2compat import *
+
 from citeproc import CitationStylesStyle, CitationStylesBibliography
 from citeproc import Citation, CitationItem
 from citeproc import formatter
@@ -143,7 +143,7 @@ def _collection(client):
         meta = connect.document_details(client.user_settings,documentId[idx])
         doc_meta.append({
             "id": meta['id'],
-            "title": meta['title'],
+            "title":meta['title'],
             "publisher": meta['published_in'],
             "type": "book",
             })
@@ -156,20 +156,11 @@ def _get_citation(library, document_id, style):
     bib_style = CitationStylesStyle(style)
     bibliography = CitationStylesBibliography(bib_style, bib_source, formatter.plain)
 
-<<<<<<< HEAD
     for id in range(0, len(document_id)):
         citation = Citation([CitationItem(library[id]['id'])])
         bibliography.register(citation)
-=======
-    # for idx in document_id:
-    #     citation = Citation([CitationItem(idx)])
-    #     bibliography.register(citation)
 
-    citation = Citation([CitationItem('6147361191')])
-    bibliography.register(citation)
->>>>>>> 1bc893495e7dd1218c3d1ec4614ce72039d4274b
-
-    return bibliography
+    return bibliography.bibliography()
 
 def _page_content(node, mendeley, branch=None, sha=None, hotlink=False, _connection=None):
     """Return the info to be rendered for a library.
@@ -290,15 +281,15 @@ def mendeley_page(*args, **kwargs):
     mendeley_user.oauth_token_type = token['token_type']
     mendeley_user.oauth_token_expires = token['expires_in']
 
-<<<<<<< HEAD
     connect = Mendeley.from_settings(mendeley.user_settings)
     user_library = connect.library(mendeley.user_settings)
     user_folders = connect.folders(mendeley.user_settings)
     user_folders_id = []
+    user_folders_name = []
 
     for idx in range(0, len(user_folders)):
         user_folders_id.append(user_folders[idx]['id'])
-        user_folders_name = user_folders['name']
+        user_folders_name.append(user_folders[idx]['name'])
 
 
     documentId = user_library['document_ids']
@@ -348,10 +339,6 @@ def mendeley_page(*args, **kwargs):
             "second_line": second_line,
             "third_line": third_line,
              })
-=======
-    library_connect = _connect_to_library(mendeley_user, mendeley, user)
-    library = parse_library(library_connect, mendeley)
->>>>>>> 1bc893495e7dd1218c3d1ec4614ce72039d4274b
 
     data = _view_project(node, user, primary=True)
 
@@ -359,9 +346,10 @@ def mendeley_page(*args, **kwargs):
     rv.update({
         'addon_page_js': mendeley_user.config.include_js.get('page'),
         'addon_page_css': mendeley_user.config.include_css.get('page'),
-        'items': library,
+        'items': doc_meta,
         'citation_styles': CITATION_STYLES,
         'export_formats': EXPORT_FORMATS,
+        'folder_names': user_folders_name,
     })
     rv.update(mendeley_user.config.to_json())
     rv.update(data)
@@ -457,9 +445,9 @@ def mendeley_oauth_delete_node(*args, **kwargs):
 
 def mendeley_oauth_callback(*args, **kwargs):
 
+
     user = models.User.load(kwargs.get('uid'))
     node = models.Node.load(kwargs.get('nid'))
-
 
     if user is None:
         raise HTTPError(http.NOT_FOUND)
@@ -516,22 +504,23 @@ def mendeley_export(*args, **kwargs):
     library_connect = _connect_to_library(mendeley_user, mendeley, user)
     library = parse_library(library_connect, mendeley)
 
+
     if mendeley_node:
 
         keys = request.args.getlist('allKeys')
         format = request.args.get('format')
 
-        if format not in EXPORT_FORMATS:
+        if(format not in EXPORT_FORMATS):
             raise HTTPError(http.BAD_REQUEST), "Export format not recognized"
 
         if keys:
             export = _get_citation(library, keys, format)
-            export = export.bibliography()
+            export = export.encode('utf-8')
             print export
         else:
             export = 'No Items specified'
 
-        raise Exception
+
         strIO = StringIO.StringIO()
         strIO.write(str(export))
         strIO.seek(0)
@@ -553,10 +542,7 @@ def mendeley_citation(*args, **kwargs):
 
     library_connect = _connect_to_library(mendeley_user, mendeley, user)
     library = parse_library(library_connect, mendeley)
-<<<<<<< HEAD
 
-=======
->>>>>>> 1bc893495e7dd1218c3d1ec4614ce72039d4274b
 
     if mendeley_node:
         keys = request.json.get('allKeys')

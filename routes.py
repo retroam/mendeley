@@ -48,7 +48,7 @@ settings_routes = {
 
         # OAuth: General
         Rule([
-            '/addons/mendeley/callback/<uid>',
+            '/addons/mendeley/callback/<uid>/',
             '/addons/mendeley/callback/<uid>/<nid>/',
         ], 'get', views.mendeley_oauth_callback, json_renderer),
     ],
