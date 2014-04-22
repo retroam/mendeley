@@ -111,21 +111,10 @@ class Mendeley(object):
 
         if self.access_token is None:
             return
+        else:
+            self.access_token = None
 
-        return self._send(
-            os.path.join(
-                API_URL, 'applications', mendeley_settings.CLIENT_ID,
-                'tokens', self.access_token,
-            ),
-            method='delete',
-            cache=False,
-            output=None,
-            auth=(
-                mendeley_settings.CLIENT_ID,
-                mendeley_settings.CLIENT_SECRET,
-            )
-        )
-
+        return self.access_token
 
 
     def library(self, user):
