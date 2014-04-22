@@ -40,7 +40,7 @@
                 <a href="${api_url}mendeley" type="button" class="btn btn-default"><span class="glyphicon glyphicon-home"></span>&nbsp; All Items</a>
 
                 <form role="form" id="mendeleyCollectionForm" style="display: inline;">
-                    <input type="hidden" id="mendeleyCollectionName" name="collection" value="">
+                    <input type="hidden" id="mendeleyCollectionName" name="folder" value="">
                     <div class="btn-group">
                         <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
                           <span class="glyphicon glyphicon-list"></span>&nbsp; Folders

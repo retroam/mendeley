@@ -262,6 +262,8 @@ def mendeley_widget(*args, **kwargs):
 @must_have_addon('mendeley', 'node')
 def mendeley_page(*args, **kwargs):
 
+    folder = request.args.get('folder')
+
     user = kwargs['auth']
     node = kwargs['node'] or kwargs['project']
     mendeley = kwargs['node_addon']
@@ -291,12 +293,14 @@ def mendeley_page(*args, **kwargs):
         user_folders_id.append(user_folders[idx]['id'])
         user_folders_name.append(user_folders[idx]['name'])
 
+    if folder != None:
+        idx = user_folders_name.index(folder)
+        folder_documentId = connect.folder_details(mendeley.user_settings, user_folders_id[idx])
+        documentId = folder_documentId['document_ids']
+    else:
+        documentId = user_library['document_ids']
 
-    documentId = user_library['document_ids']
     doc_meta = []
-
-
-
 
     for idx in range(0,len(documentId)):
         meta = connect.document_details(mendeley.user_settings,documentId[idx])
@@ -355,7 +359,6 @@ def mendeley_page(*args, **kwargs):
     rv.update(data)
 
     return rv
-
 
 
 
