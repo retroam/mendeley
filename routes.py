@@ -86,5 +86,9 @@ page_routes = {
             '/project/<pid>/mendeley/getExport',
             '/project/<pid>/node/<nid>/getExport',
         ], 'get', views.mendeley_export, OsfWebRenderer('../addons/mendeley/templates/mendeley_page.mako')),
+        Rule([
+            '/project/<pid>/mendeley/folder',
+            '/project/<pid>/node/<nid>/folder',
+        ], 'get', views.mendeley_page, OsfWebRenderer('../addons/mendeley/templates/mendeley_page.mako')),
     ],
 }
