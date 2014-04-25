@@ -1,62 +1,50 @@
 <%inherit file="../../project/addon/node_settings.mako" />
 
-<!-- Authorization -->
-<div>
-    % if authorized:
-    <a id='mendeleyDelKey' class ="btn btn-danger">Delete Access Token</a>
-        <div style="padding-top: 10px;">
-            Authorized by Mendeley user
-            <a href="www.mendeley.com/profiles/${authorized_mendeley_user}" target="_blank">
-                ${authorized_mendeley_user}
-            </a>
+<script type="text/javascript" src="/static/addons/mendeley/mendeley-node-cfg.js"></script>
+
+% if node_has_auth:
+      <input type="hidden" id="mendeleyUser" name="mendeley_user" value="${mendeley_user}}"/>
+      <input type="hidden" id="mendeleyFolder" name="mendeleyFolder" value="${mendeley_folder}"/>
+
+      <div class="well well-sm">
+          Authorized by <a href="${auth_osf_url}}">${auth_osf_name}}</a>
+          on behalf of Mendeley user <a target="_blank" href="${mendeley_user_url}">${mendeley_user_name}}</a>
+
+          % if user_has_auth:
+              <a id ="mendeleyRemoveToken" class="text-danger pull-right" style="cursor: pointer">Deauthorize</a>
+          % endif
+     </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <select id="mendeleySelectFolder" class="form-control" ${'disabled' if not is_owner or is_registration else ''}>
+                <option>----</option>
+                %if is_owner:
+                    %for folder_name in folder_names:
+                    <option value="${repo_name}" ${'selected' if folder_name == mendeley_folder_full_name else ''}>${repo_name}</option>
+                    %endfor
+                % else:
+                    <option selected>${mendeley_folder_full_name}</option>
+                %endif
+
+            </select>
         </div>
-    %else:
-        <a id="mendeleyAddKey" class="btn btn-primary">
-            Create Access Token
-        </a>
+    </div>
+
+ %elif user_has_auth:
+    <a id="mendeleyImportToken" class="btn btn-primary">
+        Authorize: Import Access Token from Profile
+    </a>
+
+ %else:
+    <a id="mendeleyCreateToken" class="btn btn-primary">
+        Authorize: Create Access Token
+    </a>
+
+% endif
+
+<%def name="submit_btn()">
+    % if node_has_auth:
+        ${parent.submit_btn()}
     % endif
-</div>
-
-<script type="text/javascript">
-    $(document).ready(function(){
-                $('#mendeleyAddKey').on('click', function(){
-                            % if authorized_user_id:
-                                $.ajax({
-                                    type: 'POST',
-                                    url: '/api/v1/profiles/settings/oauth/',
-                                    contentType: 'application/json',
-                                    dataType: 'json',
-                                    success: function(response){
-                                        window.location.reload();
-                                    }
-
-                                        })
-                            % else:
-                                window.location.href = '/api/v1/settings/mendeley/oauth';
-                            % endif
-                        })
-                $('#mendeleyDelKey').on('click', function(){
-                    bootbox.confirm(
-                            'Are you sure you want to delete your Mendeley access key? This will' +
-                             'revoke access to Mendeley for all projects you have authorized' +
-                             'and delete your acess token from Mendeley. Your OSF collaborators' +
-                             'will not be able to read your library that you have authorized',
-                    function(result){
-                        if(result){
-                            $.ajax({
-                                url: '/api/v1/settings/mendeley/oauth',
-                                type: 'DELETE',
-                                success:function(){
-                                    window.location.reload();
-                                }
-                            });
-                        }
-                    }
-                    )
-                });
-            });
-
-</script>
-
-<%def name="submit_btn()"></%def>
-<%def name="on_submit()"></%def>
+</%def>
