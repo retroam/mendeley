@@ -397,6 +397,7 @@ def mendeley_oauth_start(*args, **kwargs):
     user.add_addon('mendeley')
     mendeley_user = user.get_addon('mendeley')
 
+
     if node:
 
         mendeley_node = node.get_addon('mendeley')
@@ -480,9 +481,8 @@ def mendeley_oauth_callback(*args, **kwargs):
 
     connect = Mendeley.from_settings(mendeley_user)
     user = connect.user()
-
-    # mendeley_user.mendeley_user = user['login']
-
+    user_name = user['main']['url'].rsplit('/', 2)[1]
+    mendeley_user.mendeley_user = user_name
     mendeley_user.save()
 
     if mendeley_node:

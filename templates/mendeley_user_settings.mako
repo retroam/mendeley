@@ -6,7 +6,7 @@
         <a id="mendeleyDelKey" class="btn btn-danger">Delete Access Token</a>
         <div style="padding-top: 10px;">
             Authorized by Mendeley user
-            <a href="https://mendeley.com/${authorized_mendeley_user}" target="_blank">
+            <a href="https://mendeley.com/profiles/${authorized_mendeley_user}" target="_blank">
                 ${authorized_mendeley_user}
             </a>
         </div>
@@ -39,9 +39,9 @@
 
         $('#mendeleyDelKey').on('click', function() {
             bootbox.confirm(
-                             'Are you sure you want to delete your Mendeley access key? This will' +
-                             'revoke access to Mendeley for all projects you have authorized' +
-                             'and delete your acess token from Mendeley. Your OSF collaborators' +
+                             'Are you sure you want to delete your Mendeley access key? This will ' +
+                             'revoke access to Mendeley for all projects you have authorized ' +
+                             'and delete your acess token from Mendeley. Your OSF collaborators ' +
                              'will not be able to read your library that you have authorized',
                 function(result) {
                     if (result) {
