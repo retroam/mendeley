@@ -1,4 +1,4 @@
-<%inherit file="project/addon/settings.mako" />
+<%inherit file="project/addon/user_settings.mako" />
 
 <!-- Authorization -->
 <div>
@@ -39,9 +39,10 @@
 
         $('#mendeleyDelKey').on('click', function() {
             bootbox.confirm(
-                'Are you sure you want to delete your Mendeley access key? This will ' +
-                    'revoke access to Mendeley for all projects you have authorized ' +
-                    'and delete your access token from Mendeley.',
+                             'Are you sure you want to delete your Mendeley access key? This will' +
+                             'revoke access to Mendeley for all projects you have authorized' +
+                             'and delete your acess token from Mendeley. Your OSF collaborators' +
+                             'will not be able to read your library that you have authorized',
                 function(result) {
                     if (result) {
                         $.ajax({
@@ -60,3 +61,6 @@
     });
 
 </script>
+
+<%def name="submit_btn()"></%def>
+<%def name="on_submit()"></%def>
