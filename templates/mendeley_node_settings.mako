@@ -21,7 +21,7 @@
                 <option>----</option>
                 %if is_owner:
                     %for folder_name in folder_names:
-                    <option value="${repo_name}" ${'selected' if folder_name == mendeley_folder_full_name else ''}>${repo_name}</option>
+                    <option value="${folder_name}" ${'selected' if folder_name == mendeley_folder_full_name else ''}>${repo_name}</option>
                     %endfor
                 % else:
                     <option selected>${mendeley_folder_full_name}</option>

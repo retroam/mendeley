@@ -61,7 +61,7 @@ class AddonMendeleyNodeSettings(AddonNodeSettingsBase):
         rv = super(AddonMendeleyNodeSettings, self).to_json(user)
         rv.update({
             'mendeley_user': self.user or '',
-            'user_has_authorization': mendeley_user and mendeley_user.has_auth,
+            'user_has_auth': mendeley_user and mendeley_user.has_auth,
             'show_submit': True,
         })
         if self.user_settings and self.user_settings.has_auth:
