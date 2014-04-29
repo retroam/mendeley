@@ -368,7 +368,6 @@ def mendeley_page(*args, **kwargs):
 @must_have_addon('mendeley', 'node')
 def mendeley_add_user_auth(*args, **kwargs):
 
-    raise Exception
 
     user = kwargs['auth'].user
 
@@ -379,6 +378,7 @@ def mendeley_add_user_auth(*args, **kwargs):
         raise HTTPError(http.BAD_REQUEST)
 
     node_settings.user_settings = user_settings
+    print user_settings
     node_settings.save()
 
     return {}

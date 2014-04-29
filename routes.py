@@ -42,9 +42,9 @@ settings_routes = {
             '/project/<pid>/node/<nid>/mendeley/user_auth/',
         ], 'post', views.mendeley_add_user_auth, json_renderer),
         Rule([
-            '/project/<pid>/mendeley/oauth/delete/',
-            '/project/<pid>/node/<nid>/mendeley/oauth/delete/',
-        ], 'post', views.mendeley_oauth_delete_node, json_renderer),
+            '/project/<pid>/mendeley/oauth/',
+            '/project/<pid>/node/<nid>/mendeley/oauth/',
+        ], 'delete', views.mendeley_oauth_delete_node, json_renderer),
 
         # OAuth: General
         Rule([

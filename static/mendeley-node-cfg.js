@@ -18,7 +18,7 @@ var MendeleyConfigHelper = (function(){
         $('#mendeleyImportToken').on('click', function(){
             $.ajax({
                 type: 'POST',
-                url: nodeApiUrl + 'mendeley/user_auth',
+                url: nodeApiUrl + 'mendeley/user_auth/',
                 contentType: 'application/json',
                 dataType: 'json',
                 success: function(response){
@@ -31,7 +31,7 @@ var MendeleyConfigHelper = (function(){
             window.location.href = nodeApiUrl + 'mendeley/oauth/';
         });
 
-        $('mendeleyRemoveToken').on('click', function(){
+        $('#mendeleyRemoveToken').on('click', function(){
             bootbox.confirm('Are you sure you want to remove this Mendeley authorization?', function(confirm){
                 if (confirm){
                     $.ajax({
@@ -51,4 +51,4 @@ var MendeleyConfigHelper = (function(){
             }
         });
     });
-});
+})();
