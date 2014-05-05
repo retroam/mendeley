@@ -73,13 +73,14 @@ class AddonMendeleyNodeSettings(AddonNodeSettingsBase):
                 user_folders_name = []
 
                 for idx in range(0, len(user_folders)):
-                    user_folders_name.append(user_folders[idx]['name'])
+                    user_folder = '{0} / {1}'.format(self.user_settings.mendeley_user, user_folders[idx]['name'])
+                    user_folders_name.append(user_folder)
 
 
                 rv.update({
                     'node_has_auth': True,
                     'mendeley_user': self.user or '',
-                    'mendeley_folder_full_name':'{0} / {1}'.format(self.user, self.folder),
+                    'mendeley_folder_full_name': '{0} / {1}'.format(self.user, self.folder),
                     'auth_osf_name': owner.fullname,
                     'auth_osf_url': owner.url,
                     'auth_osf_id': owner._id,

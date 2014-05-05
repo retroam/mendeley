@@ -30,6 +30,7 @@
             </select>
         </div>
     </div>
+    <br />
 
  %elif user_has_auth:
     <a id="mendeleyImportToken" class="btn btn-primary">

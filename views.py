@@ -217,11 +217,13 @@ def _page_content(node, mendeley, branch=None, sha=None, hotlink=False, _connect
     }
 
 
-@must_be_contributor
+@must_have_permission('write')
 @must_have_addon('mendeley', 'node')
-def mendeley_set_config(*args, **kwargs):
+@must_not_be_registration
+def mendeley_set_config(**kwargs):
 
-    user = kwargs['user']
+    auth = kwargs['auth']
+    user = auth.user
 
     mendeley_node = kwargs['node_addon']
     mendeley_user = mendeley_node.user_settings
@@ -229,6 +231,61 @@ def mendeley_set_config(*args, **kwargs):
     # If authorized, only owner can change settings
     if mendeley_user and mendeley_user.owner != user:
         raise HTTPError(http.BAD_REQUEST)
+
+    # Parse request
+    mendeley_user_name = request.json.get('mendeley_user', '')
+    mendeley_folder_id = request.json.get('mendeley_folder_id', '')
+
+    # Verify that folder exists and that user can access
+    connection = Mendeley.from_settings(mendeley_user)
+    folder = connection.folder_details(mendeley_user, mendeley_folder_id)
+
+    if folder is None:
+        if user_settings:
+            message = (
+                'Cannot access folder. Either the folder does not exist '
+                'or your account does not have permission to view it.'
+            )
+        else:
+            message = (
+                'Cannot access folder'
+            )
+        return {'message': message}, http.BAD_REQUEST
+
+    if not mendeley_user_name or not mendeley_folder_name:
+        raise HTTPError(http.BAD_REQUEST)
+
+    changed = (
+        mendeley_user_name != mendeley_node.user or
+        mendeley_folder_name != mendeley_node.folder_name
+    )
+
+    # Update
+
+    if changed:
+
+        mendeley_node.delete()
+
+        # Update node settings
+        mendeley_node.user = mendeley_user_name
+        mendeley_node.folder = mendeley_folder_name
+
+        # Log folder select
+        node.add_log(
+            action='mendeley_folder_linked',
+            params={
+                'project': node.parent_id,
+                'node': node._id,
+                'mendeley': {
+                    'user': mendeley_user_name,
+                    'folder': mendeley_folder_name
+                }
+            },
+            auth=auth,
+
+        )
+
+        mendeley_node.save()
 
     return {}
 
