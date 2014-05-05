@@ -79,12 +79,12 @@ page_routes = {
             '/project/<pid>/node/<nid>/mendeley/',
         ], 'get', views.mendeley_page, OsfWebRenderer('../addons/mendeley/templates/mendeley_page.mako')),
         Rule([
-            '/project/<pid>/mendeley/getCitation',
-            '/project/<pid>/node/<nid>/getCitation',
+            '/project/<pid>/mendeley/getCitation/',
+            '/project/<pid>/node/<nid>/getCitation/',
         ], 'post', views.mendeley_citation, json_renderer),
         Rule([
-            '/project/<pid>/mendeley/getExport',
-            '/project/<pid>/node/<nid>/getExport',
+            '/project/<pid>/mendeley/getExport/',
+            '/project/<pid>/node/<nid>/getExport/',
         ], 'get', views.mendeley_export, OsfWebRenderer('../addons/mendeley/templates/mendeley_page.mako')),
     ],
 }

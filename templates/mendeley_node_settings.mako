@@ -4,7 +4,7 @@
 
 % if node_has_auth:
       <input type="hidden" id="mendeleyUser" name="mendeley_user" value="${mendeley_user}}"/>
-      <input type="hidden" id="mendeleyFolder" name="mendeleyFolder" value="#"/>
+      <input type="hidden" id="mendeleyFolder" name="mendeley_folder" value="#"/>
 
       <div class="well well-sm">
           Authorized by <a href="${auth_osf_url}">${auth_osf_name}</a>

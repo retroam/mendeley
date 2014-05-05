@@ -23,6 +23,8 @@ from website.project.decorators import must_be_contributor_or_public
 
 from website.project.decorators import must_have_addon
 from website.project.views.node import _view_project
+from website.project.decorators import must_have_permission
+from website.project.decorators import must_not_be_registration
 
 from .api import Mendeley
 from .auth import oauth_start_url, oauth_get_token, oauth_refresh_token
@@ -227,6 +229,7 @@ def mendeley_set_config(**kwargs):
 
     mendeley_node = kwargs['node_addon']
     mendeley_user = mendeley_node.user_settings
+    node = mendeley_node.owner
 
     # If authorized, only owner can change settings
     if mendeley_user and mendeley_user.owner != user:
@@ -234,58 +237,64 @@ def mendeley_set_config(**kwargs):
 
     # Parse request
     mendeley_user_name = request.json.get('mendeley_user', '')
-    mendeley_folder_id = request.json.get('mendeley_folder_id', '')
+    mendeley_folder_name = request.json.get('mendeley_folder', '')
 
-    # Verify that folder exists and that user can access
-    connection = Mendeley.from_settings(mendeley_user)
-    folder = connection.folder_details(mendeley_user, mendeley_folder_id)
+    print mendeley_folder_name
 
-    if folder is None:
-        if user_settings:
-            message = (
-                'Cannot access folder. Either the folder does not exist '
-                'or your account does not have permission to view it.'
-            )
-        else:
-            message = (
-                'Cannot access folder'
-            )
-        return {'message': message}, http.BAD_REQUEST
-
-    if not mendeley_user_name or not mendeley_folder_name:
-        raise HTTPError(http.BAD_REQUEST)
-
-    changed = (
-        mendeley_user_name != mendeley_node.user or
-        mendeley_folder_name != mendeley_node.folder_name
-    )
-
-    # Update
-
-    if changed:
-
-        mendeley_node.delete()
-
-        # Update node settings
-        mendeley_node.user = mendeley_user_name
-        mendeley_node.folder = mendeley_folder_name
-
-        # Log folder select
-        node.add_log(
-            action='mendeley_folder_linked',
-            params={
-                'project': node.parent_id,
-                'node': node._id,
-                'mendeley': {
-                    'user': mendeley_user_name,
-                    'folder': mendeley_folder_name
-                }
-            },
-            auth=auth,
-
-        )
-
-        mendeley_node.save()
+    # # Verify that folder exists and that user can access
+    # connect = Mendeley.from_settings(mendeley_user)
+    # user_folders = connect.folders(mendeley_user)
+    # user_folders_name = []
+    #
+    # for idx in range(0, len(user_folders)):
+    #     user_folders_name.append(user_folders[idx]['name'])
+    #
+    # if mendeley_folder_name in user_folders_name is False:
+    #     if mendeley_user:
+    #         message = (
+    #             'Cannot access folder. Either the folder does not exist '
+    #             'or your account does not have permission to view it.'
+    #         )
+    #     else:
+    #         message = (
+    #             'Cannot access folder'
+    #         )
+    #     return {'message': message}, http.BAD_REQUEST
+    #
+    # if not mendeley_user_name or not mendeley_folder_name:
+    #     raise HTTPError(http.BAD_REQUEST)
+    #
+    # changed = (
+    #     mendeley_user_name != mendeley_node.user or
+    #     mendeley_folder_name != mendeley_node.folder_name
+    # )
+    #
+    # # Update
+    #
+    # if changed:
+    #
+    #     mendeley_node.delete()
+    #
+    #     # Update node settings
+    #     mendeley_node.user = mendeley_user_name
+    #     mendeley_node.folder = mendeley_folder_name
+    #
+    #     # Log folder select
+    #     node.add_log(
+    #         action='mendeley_folder_linked',
+    #         params={
+    #             'project': node.parent_id,
+    #             'node': node._id,
+    #             'mendeley': {
+    #                 'user': mendeley_user_name,
+    #                 'folder': mendeley_folder_name
+    #             }
+    #         },
+    #         auth=auth,
+    #
+    #     )
+    #
+    #     mendeley_node.save()
 
     return {}
 
@@ -556,6 +565,7 @@ def mendeley_oauth_callback(*args, **kwargs):
 @must_have_addon('mendeley', 'node')
 def mendeley_export(*args, **kwargs):
 
+
     user = kwargs['auth']
     node = kwargs['node'] or kwargs['project']
     mendeley = kwargs['node_addon']
@@ -595,6 +605,7 @@ def mendeley_export(*args, **kwargs):
 @must_have_addon('mendeley', 'node')
 def mendeley_citation(*args, **kwargs):
 
+
     user = kwargs['auth']
     node = kwargs['node'] or kwargs['project']
     mendeley = kwargs['node_addon']
@@ -620,8 +631,6 @@ def mendeley_citation(*args, **kwargs):
             citations = '<span>No Items specified</span>'
 
         results = {"citationText": citations}
-
-        print citations
 
         return [results]
 
