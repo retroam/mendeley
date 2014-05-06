@@ -52,6 +52,15 @@ class AddonMendeleyNodeSettings(AddonNodeSettingsBase):
 
     registration_data = fields.DictionaryField()
 
+    def delete(self,save = True):
+        super(AddonGithubNodeSettings, self).delete(save=False)
+        self.user = None
+        self.folder = None
+        self.user_settings = None
+        if save:
+            self.save()
+
+
     @property
     def short_url(self):
         if self.user:

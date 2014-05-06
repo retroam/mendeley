@@ -23,7 +23,7 @@ function createCitation(citationStyle){
         contentType: 'application/json',
         dataType: 'json',
         success: function(data) {
-            displayCitations(data[0]['citationText'], citationStyle)
+            displayCitations(data, citationStyle)
         }
     });
 }

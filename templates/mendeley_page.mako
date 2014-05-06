@@ -147,7 +147,7 @@
       </div>
       <div class="modal-body" id="citationModalBody">
 
-          Citation goes here
+          Citation
 
       </div>
       <div class="modal-footer">

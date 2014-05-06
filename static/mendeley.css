@@ -3,15 +3,15 @@
  +    font-size: .9em;
  +}
  +
- +.zotero-options-text {
+ +.mendeley-options-text {
  +    font-weight: bold;
  +    font-size: 1.1em;
  +}
  +
- +.zotero-options-top {
+ +.mendeley-options-top {
  +    margin-bottom: 15px;
  +}
  +
- +.zotero-item-table-view-row {
+ +.mendeley-item-table-view-row {
  +    background-color: #ededed;
  +}

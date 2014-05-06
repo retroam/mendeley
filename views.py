@@ -38,6 +38,7 @@ from flask import Flask, send_file
 import StringIO
 
 
+
 MESSAGE_BASE = 'via the Open Science Framework'
 MESSAGES = {
     'add': 'Added {0}'.format(MESSAGE_BASE),
@@ -241,60 +242,60 @@ def mendeley_set_config(**kwargs):
 
     print mendeley_folder_name
 
-    # # Verify that folder exists and that user can access
-    # connect = Mendeley.from_settings(mendeley_user)
-    # user_folders = connect.folders(mendeley_user)
-    # user_folders_name = []
-    #
-    # for idx in range(0, len(user_folders)):
-    #     user_folders_name.append(user_folders[idx]['name'])
-    #
-    # if mendeley_folder_name in user_folders_name is False:
-    #     if mendeley_user:
-    #         message = (
-    #             'Cannot access folder. Either the folder does not exist '
-    #             'or your account does not have permission to view it.'
-    #         )
-    #     else:
-    #         message = (
-    #             'Cannot access folder'
-    #         )
-    #     return {'message': message}, http.BAD_REQUEST
-    #
-    # if not mendeley_user_name or not mendeley_folder_name:
-    #     raise HTTPError(http.BAD_REQUEST)
-    #
-    # changed = (
-    #     mendeley_user_name != mendeley_node.user or
-    #     mendeley_folder_name != mendeley_node.folder_name
-    # )
-    #
-    # # Update
-    #
-    # if changed:
-    #
-    #     mendeley_node.delete()
-    #
-    #     # Update node settings
-    #     mendeley_node.user = mendeley_user_name
-    #     mendeley_node.folder = mendeley_folder_name
-    #
-    #     # Log folder select
-    #     node.add_log(
-    #         action='mendeley_folder_linked',
-    #         params={
-    #             'project': node.parent_id,
-    #             'node': node._id,
-    #             'mendeley': {
-    #                 'user': mendeley_user_name,
-    #                 'folder': mendeley_folder_name
-    #             }
-    #         },
-    #         auth=auth,
-    #
-    #     )
-    #
-    #     mendeley_node.save()
+    # Verify that folder exists and that user can access
+    connect = Mendeley.from_settings(mendeley_user)
+    user_folders = connect.folders(mendeley_user)
+    user_folders_name = []
+
+    for idx in range(0, len(user_folders)):
+        user_folders_name.append(user_folders[idx]['name'])
+
+    if mendeley_folder_name in user_folders_name is False:
+        if mendeley_user:
+            message = (
+                'Cannot access folder. Either the folder does not exist '
+                'or your account does not have permission to view it.'
+            )
+        else:
+            message = (
+                'Cannot access folder'
+            )
+        return {'message': message}, http.BAD_REQUEST
+
+    if not mendeley_user_name or not mendeley_folder_name:
+        raise HTTPError(http.BAD_REQUEST)
+
+    changed = (
+        mendeley_user_name != mendeley_node.user or
+        mendeley_folder_name != mendeley_node.folder_name
+    )
+
+    # Update
+
+    if changed:
+
+        mendeley_node.delete()
+
+        # Update node settings
+        mendeley_node.user = mendeley_user_name
+        mendeley_node.folder = mendeley_folder_name
+
+        # Log folder select
+        node.add_log(
+            action='mendeley_folder_linked',
+            params={
+                'project': node.parent_id,
+                'node': node._id,
+                'mendeley': {
+                    'user': mendeley_user_name,
+                    'folder': mendeley_folder_name
+                }
+            },
+            auth=auth,
+
+        )
+
+        mendeley_node.save()
 
     return {}
 
@@ -630,9 +631,10 @@ def mendeley_citation(*args, **kwargs):
         else:
             citations = '<span>No Items specified</span>'
 
-        results = {"citationText": citations}
 
-        return [results]
 
+        citations = citations.replace(' .', '.<br>')
+
+        return citations
     else:
         raise HTTPError(http.BAD_REQUEST)
