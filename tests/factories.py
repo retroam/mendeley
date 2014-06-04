@@ -4,17 +4,17 @@ from factory import SubFactory, Sequence
 from tests.factories import ModularOdmFactory, UserFactory, ProjectFactory
 
 from website.addons.mendeley.model import (
-    MendeleyUserSettings, MendeleyNodeSettings
+    AddonMendeleyUserSettings, AddonMendeleyNodeSettings
 )
 
 class MendeleyUserSettingsFactory(ModularOdmFactor):
-    FACTOR_FOR = MendeleyUserSettings
+    FACTOR_FOR = AddonMendeleyUserSettings
 
     owner = SubFactory(UserFactory)
     access_token = Sequence(lambda n: 'abcdef{0}'.format(n))
 
 class MendeleyNodeSettingsFactory(ModularOdmFactory):
-    FACTORY_FOR = MendeleyNodeSettings
+    FACTORY_FOR = AddonMendeleyNodeSettings
 
     owner = SubFactory(ProjectFactory)
     user_settings = SubFactory(MendeleyUserSettingsFactory)

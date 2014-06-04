@@ -4,7 +4,7 @@ from nose.tools import *
 
 from framework.auth.decorators import Auth
 from website.addons.mendeley.model import (
-MendeleyUserSettings, MendeleyNodeSettings
+AddonMendeleyUserSettings, AddonMendeleyNodeSettings
 )
 
 from tests.base import DbTestCase, fake, URLLookup
