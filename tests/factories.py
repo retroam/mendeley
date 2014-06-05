@@ -7,11 +7,13 @@ from website.addons.mendeley.model import (
     AddonMendeleyUserSettings, AddonMendeleyNodeSettings
 )
 
-class MendeleyUserSettingsFactory(ModularOdmFactor):
-    FACTOR_FOR = AddonMendeleyUserSettings
+
+class MendeleyUserSettingsFactory(ModularOdmFactory):
+    FACTORY_FOR = AddonMendeleyUserSettings
 
     owner = SubFactory(UserFactory)
     access_token = Sequence(lambda n: 'abcdef{0}'.format(n))
+
 
 class MendeleyNodeSettingsFactory(ModularOdmFactory):
     FACTORY_FOR = AddonMendeleyNodeSettings

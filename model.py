@@ -41,6 +41,19 @@ class AddonMendeleyUserSettings(AddonUserSettingsBase):
         })
         return rv
 
+    def clear_auth(self):
+        self.mendeley_user = None
+        self.oauth_access_token = None
+
+    def delete(self, save = True):
+        super(AddonMendeleyUserSettings, self).delete()
+        self.clear_auth()
+        for node_settings in self.mendeleynodesettings_authorized:
+            node_settings.delete(save=False)
+            node_settings.user_settings = None
+            node_settings.save()
+
+
 class AddonMendeleyNodeSettings(AddonNodeSettingsBase):
 
     user = fields.StringField()
@@ -52,13 +65,7 @@ class AddonMendeleyNodeSettings(AddonNodeSettingsBase):
 
     registration_data = fields.DictionaryField()
 
-    def delete(self,save = True):
-        super(AddonGithubNodeSettings, self).delete(save=False)
-        self.user = None
-        self.folder = None
-        self.user_settings = None
-        if save:
-            self.save()
+
 
 
     @property
