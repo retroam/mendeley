@@ -68,17 +68,43 @@ class TestUserSettingsModel(DbTestCase):
 class TestMendeleyNodeSettingsModel(DbTestCase):
 
     def setUp(self):
-        self.User = None
-    #
-    # def test_fields(self):
-    #     None
-    #
+        self.user = UserFactory()
+        self.user.add_addon('mendeley')
+        self.user.save()
+        self.user_settings = self.user.get_addon('mendeley')
+        self.project = ProjectFactory()
+        self.node_settings = MendeleyNodeSettingsFactory(
+            user_settings=self.user_settings,
+            owner=self.project
+        )
+
+    def test_fields(self):
+        node_settings = AddonMendeleyNodeSettings(user_settings=self.user_settings)
+        node_settings.save()
+        assert_true(node_settings.user_settings)
+        assert_equal(node_settings.user_settings.owner, self.user)
+        assert_true(hasattr(node_settings, 'folder'))
+
+    # def test_shorturl(self):
+    #     node_settings = AddonMendeleyNodeSettings(user_settings=self.user_settings)
+    #     print self.user
+    #     print node_settings.short_url
+    #     assert_equal(node_settings.short_url, '/'.join([self.user]))
+
+
     # def test_has_auth(self):
     #     None
     #
-    # def test_to_json(self):
-    #     None
-    #
+
+    def test_to_json(self):
+        node_settings = self.node_settings
+        user = self.user
+        result = node_settings.to_json(user)
+        assert_equal(result['addon_short_name'], 'mendeley')
+
+
+
+
     # def test_to_json(self):
     #     None
     #

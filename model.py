@@ -69,10 +69,10 @@ class AddonMendeleyNodeSettings(AddonNodeSettingsBase):
 
 # TODO:store additional authorized  nodes
 
-    @property
-    def short_url(self):
-        if self.user:
-            return '/'.join([self.user])
+   # @property
+    # def short_url(self):
+    #     if self.user:
+    #         return '/'.join([self.user])
 
     def to_json(self, user):
         rv = super(AddonMendeleyNodeSettings, self).to_json(user)
