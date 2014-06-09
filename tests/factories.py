@@ -12,7 +12,7 @@ class MendeleyUserSettingsFactory(ModularOdmFactory):
     FACTORY_FOR = AddonMendeleyUserSettings
 
     owner = SubFactory(UserFactory)
-    access_token = Sequence(lambda n: 'abcdef{0}'.format(n))
+    oauth_access_token = Sequence(lambda n: 'abcdef{0}'.format(n))
 
 
 class MendeleyNodeSettingsFactory(ModularOdmFactory):
