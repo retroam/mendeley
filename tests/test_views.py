@@ -23,45 +23,50 @@ from website.addons.mendeley.tests.utils import (
 lookup = URLLookup(app)
 mock_client = MockMendeley()
 
+
 class TestAuthViews(DbTestCase):
 
     def setUp(self):
-        return None
+        self.app = TestApp(app)
+        self.user = AuthUserFactory()
+        self.app.authenticate(*self.user.auth)
 
     def test_mendeley_oauth_start(self):
-        return None
+        url = lookup('api', 'mendeley_oauth_start_user')
+        res = self.app.get(url)
+        assert_is_redirect(res)
 
-    def test_mendeley_oauth_finish(self):
-        return None
-
-    def test_mendeley_oauth_delete_user(self):
-        return None
-
-
-class TestConfigViews(MendeleyAddonTestCase):
-
-    def test_mendeley_config_get(self):
-        return None
-
-    def test_mendeley_deauthorize(self):
-        return None
-
-    def test_mendeley_import_user_auth_add_a_log(self):
-        return None
-
-    def test_mendeley_get_share_emails(self):
-        return None
-
-    def test_mendeley_get_share_emails_returns_error_if_not_authorize(self):
-        return None
-
-    def test_mendeley_get_share_emails_requires_user_addon(self):
-        return None
-
-class TestFilebrowserViews(MendeleyAddonTestCase):
-
-    def test_mendeley_addon_folder(self):
-        return None
+#     def test_mendeley_oauth_finish(self):
+#         return None
+#
+#     def test_mendeley_oauth_delete_user(self):
+#         return None
+#
+#
+# class TestConfigViews(MendeleyAddonTestCase):
+#
+#     def test_mendeley_config_get(self):
+#         return None
+#
+#     def test_mendeley_deauthorize(self):
+#         return None
+#
+#     def test_mendeley_import_user_auth_add_a_log(self):
+#         return None
+#
+#     def test_mendeley_get_share_emails(self):
+#         return None
+#
+#     def test_mendeley_get_share_emails_returns_error_if_not_authorize(self):
+#         return None
+#
+#     def test_mendeley_get_share_emails_requires_user_addon(self):
+#         return None
+#
+# class TestFilebrowserViews(MendeleyAddonTestCase):
+#
+#     def test_mendeley_addon_folder(self):
+#         return None
 
 
 

@@ -1,16 +1,38 @@
 import mock
+from contextlib import contextmanager
 
-from website.addons.mendeley.api import Figshare
+from webtest_plus import TestApp
+
+from framework import storage
+from framework.mongo import db, set_up_storage
+
+import website
+from website.addons.base.testing import AddonTestCase
+from website.addons.mendeley import MODELS
 
 
-def create_mock_mendeley(project):
-    mendeley_mock = mock.create_autospec(Figshare)
+app = website.app.init_app(
+    routes=True, set_backends=False, settings_module='website.settings'
+)
 
-    mendeley_mock.projects.return_value = [{u'owner': 506241, u'description': u'', u'id': 436, u'title': u'OSF Test'}]
 
-    mendeley_mock.project.return_value = {'articles': [{u'status': u'Draft', u'files': [{u'thumb': None, u'download_url': u'http://files.mendeley.com/1348803/0NUTZ', u'name': u'0NUTZ', u'id': 1348803, u'mime_type': u'text/plain', u'size': u'0 KB'}, {u'thumb': None, u'download_url': u'http://files.mendeley.com/1348805/0MNXS', u'name': u'0MNXS', u'id': 1348805, u'mime_type': u'text/plain', u'size': u'0 KB'}, {u'thumb': None, u'download_url': u'http://files.mendeley.com/1348806/0NUTZ', u'name': u'0NUTZ', u'id': 1348806, u'mime_type': u'text/plain', u'size': u'0 KB'}, {u'thumb': None, u'download_url': u'http://files.mendeley.com/1348807/0OX1G', u'name': u'0OX1G', u'id': 1348807, u'mime_type': u'text/plain', u'size': u'0 KB'}, {u'thumb': u'http://previews.mendeley.com/1350751/250_1350751.jpg', u'download_url': u'http://files.mendeley.com/1350751/Selection_003.png', u'name': u'Selection_003.png', u'id': 1350751, u'mime_type': u'image/png', u'size': u'18 KB'}, {u'thumb': u'http://previews.mendeley.com/1350754/250_1350754.jpg', u'download_url': u'http://files.mendeley.com/1350754/Selection_003.png', u'name': u'Selection_003.png', u'id': 1350754, u'mime_type': u'image/png', u'size': u'18 KB'}], u'description': u'<p>This is made using python</p>', u'links': [], u'title': u'New fileset', u'total_size': u'34.59 KB', u'master_publisher_id': 0, u'authors': [{u'first_name': u'Samuel', u'last_name': u'Chrisinger', u'id': 506241, u'full_name': u'Samuel Chrisinger'}], u'defined_type': u'fileset', u'version': 15, u'categories': [{u'id': 77, u'name': u'Applied Computer Science'}], u'published_date': u'22:13, Jan 16, 2014', u'description_nohtml': u'This is made using python', u'article_id': 902210, u'tags': [{u'id': 3564, u'name': u'code'}]}, {u'status': u'Drafts', u'files': [{u'id': 1404749, u'name': u'HW6.pdf', u'thumb': u'http://mendeley.com/read/private/1404749/250_1404749.png', u'mime_type': u'application/pdf', u'size': u'177 KB'}], u'description': u'', u'links': [], u'title': u'HW6.pdf', u'total_size': u'172.82 KB', u'master_publisher_id': 0, u'authors': [{u'first_name': u'Samuel', u'last_name': u'Chrisinger', u'id': 506241, u'full_name': u'Samuel Chrisinger'}], u'defined_type': u'paper', u'version': 1, u'categories': [], u'published_date': u'09:25, Feb 24, 2014', u'description_nohtml': u'', u'article_id': 949657, u'tags': []}], u'description': u'', u'created': u'06/03/2014', u'id': 862, u'title': u'OSF Test'}
+def init_storage():
+    set_up_storage(MODELS, storage_class=storage.MongoStorage, db=db)
 
-    mendeley_mock.article.return_value = {u'count': 1, u'items': [{u'status': u'Draft', u'files': [{u'thumb': None, u'download_url': u'http://files.mendeley.com/1348803/0NUTZ', u'name': u'0NUTZ', u'id': 1348803, u'mime_type': u'text/plain', u'size': u'0 KB'}, {u'thumb': None, u'download_url': u'http://files.mendeley.com/1348805/0MNXS', u'name': u'0MNXS', u'id': 1348805, u'mime_type': u'text/plain', u'size': u'0 KB'}, {u'thumb': None, u'download_url': u'http://files.mendeley.com/1348806/0NUTZ', u'name': u'0NUTZ', u'id': 1348806, u'mime_type': u'text/plain', u'size': u'0 KB'}, {u'thumb': None, u'download_url': u'http://files.mendeley.com/1348807/0OX1G', u'name': u'0OX1G', u'id': 1348807, u'mime_type': u'text/plain', u'size': u'0 KB'}, {u'thumb': u'http://previews.mendeley.com/1350751/250_1350751.jpg', u'download_url': u'http://files.mendeley.com/1350751/Selection_003.png', u'name': u'Selection_003.png', u'id': 1350751, u'mime_type': u'image/png', u'size': u'18 KB'}, {u'thumb': u'http://previews.mendeley.com/1350754/250_1350754.jpg', u'download_url': u'http://files.mendeley.com/1350754/Selection_003.png', u'name': u'Selection_003.png', u'id': 1350754, u'mime_type': u'image/png', u'size': u'18 KB'}], u'description': u'<p>This is made using python</p>', u'links': [], u'title': u'New fileset', u'total_size': u'34.59 KB', u'master_publisher_id': 0, u'authors': [{u'first_name': u'Samuel', u'last_name': u'Chrisinger', u'id': 506241, u'full_name': u'Samuel Chrisinger'}], u'defined_type': u'fileset', u'version': 15, u'categories': [{u'id': 77, u'name': u'Applied Computer Science'}], u'published_date': u'22:13, Jan 16, 2014', u'description_nohtml': u'This is made using python', u'article_id': 902210, u'tags': [{u'id': 3564, u'name': u'code'}]}]}
 
-    mendeley_mock.get_file.return_value = ('a fake file', 7, 'Ummm none?')
-    return mendeley_mock
+class MendeleyAddonTestCase(AddonTestCase):
+    ADDON_SHORT_NAME = 'mendeley'
+
+    def create_app(self):
+        return TestApp(app)
+
+    def set_user_settings(self, settings):
+        settings.access_token = '12345abcd'
+        settings.mendeley_user = 'mendeleyuser'
+
+    def set_node_settings(self, settings):
+        settings.folder = 'foo'
+
+mock_responses = {
+
+    }
