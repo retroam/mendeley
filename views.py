@@ -380,15 +380,15 @@ def mendeley_page(*args, **kwargs):
             'family':meta['authors'][idy]['surname'],
             'given': meta['authors'][idy]['forename'],
             })
-            second_line = second_line + str(meta['authors'][idy]['forename']) + ' ' \
-                           + str(meta['authors'][idy]['surname']) + ', '
+            second_line = second_line + meta['authors'][idy]['forename']  + ' ' \
+                           + meta['authors'][idy]['surname'] + ', '
         second_line = second_line[:-2]
         second_line = second_line + ' (' + str(meta.get('year','0')) + ')'
 
-        third_line = str(meta['published_in']) + ' ' \
-                  + str(meta['volume']) + ' '  \
-                  + '(' + str(meta.get('issue','')) + ')' + ' ' + \
-                  str(meta.get('pages',''))
+        third_line = meta['published_in'] + ' ' \
+                  + meta['volume'] + ' '  \
+                  + '(' + meta.get('issue', '') + ')' + ' ' + \
+          meta.get('pages', '')
 
         doc_meta.append({
             "author": author,
