@@ -245,6 +245,7 @@ def mendeley_set_config(**kwargs):
     # Verify that folder exists and that user can access
     connect = Mendeley.from_settings(mendeley_user)
     user_folders = connect.folders(mendeley_user)
+
     user_folders_name = []
 
     for idx in range(0, len(user_folders)):
@@ -369,8 +370,9 @@ def mendeley_page(*args, **kwargs):
 
     doc_meta = []
 
-    for idx in range(0,len(documentId)):
-        meta = connect.document_details(mendeley.user_settings,documentId[idx])
+
+    for idx in range(0, len(documentId)):
+        meta = connect.document_details(mendeley.user_settings, documentId[idx])
         author = []
         second_line = ''
         for idy in range(0,len(meta['authors'])):

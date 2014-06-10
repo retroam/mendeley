@@ -67,7 +67,7 @@ class AddonMendeleyNodeSettings(AddonNodeSettingsBase):
 
 
 
-# TODO:store additional authorized  nodes
+#store additional authorized  nodes
 
    # @property
     # def short_url(self):
