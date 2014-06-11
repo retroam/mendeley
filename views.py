@@ -373,6 +373,7 @@ def mendeley_page(*args, **kwargs):
 
     for idx in range(0, len(documentId)):
         meta = connect.document_details(mendeley.user_settings, documentId[idx])
+        print meta
         author = []
         second_line = ''
         for idy in range(0,len(meta['authors'])):
@@ -380,14 +381,14 @@ def mendeley_page(*args, **kwargs):
             'family':meta['authors'][idy]['surname'],
             'given': meta['authors'][idy]['forename'],
             })
-            second_line = second_line + meta['authors'][idy]['forename']  + ' ' \
+            second_line = second_line + meta['authors'][idy]['forename'] + ' ' \
                            + meta['authors'][idy]['surname'] + ', '
         second_line = second_line[:-2]
         second_line = second_line + ' (' + str(meta.get('year','0')) + ')'
 
         third_line = meta['published_in'] + ' ' \
-                  + meta['volume'] + ' '  \
-                  + '(' + meta.get('issue', '') + ')' + ' ' + \
+                  + meta.get('volume', '') + ' '  \
+                  + '(' + meta.get('issue', '') + ')' + ' p. ' + \
           meta.get('pages', '')
 
         doc_meta.append({
@@ -410,7 +411,7 @@ def mendeley_page(*args, **kwargs):
             "page": meta.get('pages',""),
             "url": meta.get('url'," "),
             "second_line": second_line,
-            "third_line": third_line,
+            "third_line": third_line.replace('()', '').strip(' p. '),
              })
 
     data = _view_project(node, user, primary=True)
