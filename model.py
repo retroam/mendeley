@@ -9,7 +9,7 @@ from framework import fields
 
 from website import settings
 from website.addons.base import AddonUserSettingsBase, AddonNodeSettingsBase
-from website.addons.base import AddonError
+
 
 from . import settings as mendeley_settings
 from .api import Mendeley

@@ -7,7 +7,7 @@ from website.addons.mendeley.model import (
 AddonMendeleyUserSettings, AddonMendeleyNodeSettings
 )
 
-from tests.base import DbTestCase, fake, URLLookup
+from tests.base import OsfTestCase, fake
 from tests.factories import UserFactory, ProjectFactory
 from website.addons.mendeley.tests.factories import (
 MendeleyUserSettingsFactory, MendeleyNodeSettingsFactory)
@@ -15,9 +15,9 @@ MendeleyUserSettingsFactory, MendeleyNodeSettingsFactory)
 from website.app import init_app
 
 app = init_app(set_backends=False, routes=True)
-lookup = URLLookup(app)
 
-class TestUserSettingsModel(DbTestCase):
+
+class TestUserSettingsModel(OsfTestCase):
 
     def setUp(self):
         self.user = UserFactory()
@@ -65,7 +65,7 @@ class TestUserSettingsModel(DbTestCase):
         assert_equal(result['authorized_mendeley_user'], user_settings.mendeley_user)
 
 
-class TestMendeleyNodeSettingsModel(DbTestCase):
+class TestMendeleyNodeSettingsModel(OsfTestCase):
 
     def setUp(self):
         self.user = UserFactory()
