@@ -57,9 +57,6 @@ CITATION_STYLES = { 'American Political Science Association' : 'american-politic
 
 EXPORT_FORMATS = ['bibtex', 'coins', 'bookmarks', 'refer', 'wikipedia']
 
-@must_be_logged_in
-def mendeley_set_user_config(*args, **kwargs):
-    return {}
 
 
 def _connect_to_library(mendeley_user, mendeley, user):

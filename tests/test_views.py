@@ -12,61 +12,58 @@ from webtest_plus import TestApp
 from framework.auth.decorators import Auth
 from website.util import api_url_for
 from website.project.model import NodeLog
-from tests.base import DbTestCase, URLLookup, assert_is_redirect
-from tests.factories import AuthUserFactory
+from tests.base import OsfTestCase, assert_is_redirect
+from tests.factories import AuthUserFactory, ProjectFactory
 
 
 from website.addons.mendeley.tests.utils import (
     MendeleyAddonTestCase, app, mock_responses, MockMendeley
 )
 
-lookup = URLLookup(app)
 mock_client = MockMendeley()
 
 
-class TestAuthViews(DbTestCase):
+class TestAuthViews(OsfTestCase):
 
     def setUp(self):
         self.app = TestApp(app)
         self.user = AuthUserFactory()
         self.app.authenticate(*self.user.auth)
+        self.project = ProjectFactory(creator=self.user)
+        self.project.add_addon('mendeley', auth=Auth(user=self.user))
 
     def test_mendeley_oauth_start(self):
-        url = lookup('api', 'mendeley_oauth_start_user')
-        res = self.app.get(url)
-        assert_is_redirect(res)
+        pass
 
-#     def test_mendeley_oauth_finish(self):
-#         return None
-#
-#     def test_mendeley_oauth_delete_user(self):
-#         return None
-#
-#
-# class TestConfigViews(MendeleyAddonTestCase):
-#
-#     def test_mendeley_config_get(self):
-#         return None
-#
-#     def test_mendeley_deauthorize(self):
-#         return None
-#
-#     def test_mendeley_import_user_auth_add_a_log(self):
-#         return None
-#
-#     def test_mendeley_get_share_emails(self):
-#         return None
-#
-#     def test_mendeley_get_share_emails_returns_error_if_not_authorize(self):
-#         return None
-#
-#     def test_mendeley_get_share_emails_requires_user_addon(self):
-#         return None
-#
-# class TestFilebrowserViews(MendeleyAddonTestCase):
-#
-#     def test_mendeley_addon_folder(self):
-#         return None
+    def test_mendeley_oauth_delete_user(self):
+        pass
+
+    def test_mendeley_oauth_delete_node(self):
+        pass
+
+    def test_mendeley_oauth_callback(self):
+        pass
+
+
+class TestConfigViews(MendeleyAddonTestCase):
+
+    def test_mendeley_set_config(self):
+        pass
+
+    def test_mendeley_add_user_auth(self):
+        pass
+
+
+class TestPageViews(MendeleyAddonTestCase):
+
+    def test_mendeley_page(self):
+        pass
+
+    def test_mendeley_export(self):
+        pass
+
+    def test_mendeley_citation(self):
+        pass
 
 
 
