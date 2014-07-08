@@ -48,10 +48,6 @@ class AddonMendeleyUserSettings(AddonUserSettingsBase):
     def delete(self, save = True):
         super(AddonMendeleyUserSettings, self).delete()
         self.clear_auth()
-        # for node_settings in self.mendeleynodesettings_authorized:
-        #     node_settings.delete(save=False)
-        #     node_settings.user_settings = None
-        #     node_settings.save()
 
 
 class AddonMendeleyNodeSettings(AddonNodeSettingsBase):
@@ -65,14 +61,6 @@ class AddonMendeleyNodeSettings(AddonNodeSettingsBase):
 
     registration_data = fields.DictionaryField()
 
-
-
-#store additional authorized  nodes
-
-   # @property
-    # def short_url(self):
-    #     if self.user:
-    #         return '/'.join([self.user])
 
     def to_json(self, user):
         rv = super(AddonMendeleyNodeSettings, self).to_json(user)

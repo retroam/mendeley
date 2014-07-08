@@ -14,7 +14,7 @@ from website.util import api_url_for
 from website.project.model import NodeLog
 from tests.base import OsfTestCase, assert_is_redirect
 from tests.factories import AuthUserFactory, ProjectFactory
-
+from website.addons.mendeley import views
 
 from website.addons.mendeley.tests.utils import (
     MendeleyAddonTestCase, app, mock_responses, MockMendeley
@@ -29,11 +29,19 @@ class TestAuthViews(OsfTestCase):
         self.app = TestApp(app)
         self.user = AuthUserFactory()
         self.app.authenticate(*self.user.auth)
-        self.project = ProjectFactory(creator=self.user)
-        self.project.add_addon('mendeley', auth=Auth(user=self.user))
+
 
     def test_mendeley_oauth_start(self):
-        pass
+        self.user.add_addon('mendeley')
+        settings = self.user.get_addon('mendeley')
+        settings.access_token = '12345abc'
+        print settings.has_auth
+        settings.save()
+       # assert_true(settings.has_auth)
+        url = views.mendeley_oauth_start(self)
+        print url
+
+
 
     def test_mendeley_oauth_delete_user(self):
         pass

@@ -36,6 +36,7 @@ from citeproc import formatter
 from citeproc.source.json import CiteProcJSON
 from flask import Flask, send_file
 import StringIO
+from website.util import api_url_for
 
 
 
@@ -55,7 +56,7 @@ CITATION_STYLES = { 'American Political Science Association' : 'american-politic
                     'IEEE' : 'ieee',
                     'Nature' : 'nature'}
 
-EXPORT_FORMATS = ['bibtex', 'coins', 'bookmarks', 'refer', 'wikipedia']
+EXPORT_FORMATS = ['bibtex']
 
 
 
@@ -102,16 +103,15 @@ def parse_library(connect, mendeley):
                 'family':meta['authors'][idy]['surname'],
                 'given': meta['authors'][idy]['forename'],
             })
-            second_line = second_line + str(meta['authors'][idy]['forename']) + ' ' \
-                           + str(meta['authors'][idy]['surname']) + ', '
+            second_line = second_line + meta['authors'][idy]['forename'] + ' ' \
+                           + meta['authors'][idy]['surname'] + ', '
         second_line = second_line[:-2]
         second_line = second_line + ' (' + str(meta.get('year', '0')) + ')'
 
-        third_line = str(meta['published_in']) + ' ' \
-            + str(meta['volume']) + ' '  \
-            + '(' + str(meta.get('issue', '')) + ')' + ' ' + \
-            str(meta.get('pages', ''))
-
+        third_line = meta['published_in'] + ' ' \
+            + meta.get('volume', '') + ' '  \
+            + '(' + meta.get('issue', '') + ')' + 'p.' + \
+            meta.get('pages', '')
 
         doc_meta.append({
             "author": author,
@@ -128,7 +128,7 @@ def parse_library(connect, mendeley):
             "URL": meta.get('url', " "),
             "second_line": second_line,
             "third_line": third_line,
-             })
+                    })
 
     return doc_meta
 
@@ -367,10 +367,8 @@ def mendeley_page(*args, **kwargs):
 
     doc_meta = []
 
-
     for idx in range(0, len(documentId)):
         meta = connect.document_details(mendeley.user_settings, documentId[idx])
-        print meta
         author = []
         second_line = ''
         for idy in range(0,len(meta['authors'])):
@@ -575,7 +573,6 @@ def mendeley_export(*args, **kwargs):
 
     library_connect = _connect_to_library(mendeley_user, mendeley, user)
     library = parse_library(library_connect, mendeley)
-
 
     if mendeley_node:
 
