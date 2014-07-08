@@ -42,10 +42,12 @@ class AddonMendeleyUserSettings(AddonUserSettingsBase):
         return rv
 
     def clear_auth(self):
-        self.mendeley_user = None
-        self.oauth_access_token = None
+        for node_settings in self.addonmendeleynodesettings_authorized:
+            node_settings.deauthorize(save=True)
+        self.mendeley_user, self.oauth_access_token = None, None
 
-    def delete(self, save = True):
+
+    def delete(self, save=True):
         super(AddonMendeleyUserSettings, self).delete()
         self.clear_auth()
 
@@ -61,7 +63,34 @@ class AddonMendeleyNodeSettings(AddonNodeSettingsBase):
 
     registration_data = fields.DictionaryField()
 
+    def authorize(self, user_settings, save=False):
+        self.user_settings = user_settings
+        self.owner.add_log(
+            action='mendeley_node_authorized',
+            params={
+                'project': self.owner.parent_id,
+                'node': self.owner._id
+            },
+            auth=Auth(user_settings.owner),
+        )
+        if save:
+            self.save()
 
+    def deauthorize(self, auth=None, log=True, save=False):
+        self.user, self.folder, self.user_settings = None, None, None
+        if log:
+            self.owner.add_log(
+                action='mendeley_node_deauthorized',
+                params={
+                    'project': self.owner.parent_id,
+                    'node': self.owner._id,
+                },
+                auth=auth,
+            )
+        if save:
+            self.save()
+
+    # TODO: necessary?
     def to_json(self, user):
         rv = super(AddonMendeleyNodeSettings, self).to_json(user)
         user_settings = user.get_addon('mendeley')
